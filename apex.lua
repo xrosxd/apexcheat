@@ -1,4 +1,4 @@
--- APEX CHEAT V19.4 | FULL GAMES FUNCTIONS | NO CHECKS
+-- APEX CHEAT V20.0 | ALL FUNCTIONS | NO GAME CHECKS
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
@@ -45,7 +45,8 @@ local flingEnabled = false
 local flingPower = 50
 local invisibleEnabled = false
 
--- GAMES
+-- ===== GAMES FUNCTIONS =====
+-- NINJA LEGENDS
 local ninjaAutoHatch = false
 local ninjaHatchConn = nil
 local ninjaAutoRebirth = false
@@ -58,8 +59,10 @@ local ninjaDuping = false
 local ninjaDupingConn = nil
 local ninjaDupedCount = 0
 
+-- MM2
 local selectedPlayer = nil
 
+-- MUSCLE LEGENDS
 local muscleAutoTrain = false
 local muscleTrainConn = nil
 local muscleAutoEat = false
@@ -493,7 +496,7 @@ local function toggleInvisible(state)
     end
 end
 
--- GAMES FUNCTIONS (без проверок)
+-- ===== GAMES FUNCTIONS =====
 local function toggleNinjaAutoHatch(state)
     ninjaAutoHatch = state
     if ninjaHatchConn then ninjaHatchConn:Disconnect() ninjaHatchConn = nil end
@@ -626,7 +629,6 @@ local function teleportToMap()
     RootPart.CFrame = CFrame.new(0, 20, 0)
 end
 
--- MUSCLE LEGENDS
 local function toggleMuscleAutoTrain(state)
     muscleAutoTrain = state
     if muscleTrainConn then muscleTrainConn:Disconnect() muscleTrainConn = nil end
@@ -735,7 +737,7 @@ local titleLabel = Instance.new("TextLabel")
 titleLabel.Size = UDim2.new(0.4, 0, 1, 0)
 titleLabel.Position = UDim2.new(0, 20, 0, 0)
 titleLabel.BackgroundTransparency = 1
-titleLabel.Text = "APEX CHEAT V19.4"
+titleLabel.Text = "APEX CHEAT V20.0"
 titleLabel.TextColor3 = Color3.fromRGB(0, 180, 255)
 titleLabel.TextScaled = true
 titleLabel.Font = Enum.Font.GothamBold
@@ -753,7 +755,6 @@ creditLabel.Font = Enum.Font.Gotham
 creditLabel.TextXAlignment = Enum.TextXAlignment.Left
 creditLabel.Parent = topBar
 
--- КРУГЛАЯ КНОПКА ВЫХОДА (вместо квадрата)
 local closeBtn = Instance.new("TextButton")
 closeBtn.Size = UDim2.new(0, 36, 0, 36)
 closeBtn.Position = UDim2.new(1, -46, 0, 7)
@@ -766,7 +767,7 @@ closeBtn.BorderSizePixel = 0
 closeBtn.Parent = topBar
 
 local closeCorner = Instance.new("UICorner")
-closeCorner.CornerRadius = UDim.new(1, 0)  -- Полный круг
+closeCorner.CornerRadius = UDim.new(1, 0)
 closeCorner.Parent = closeBtn
 
 closeBtn.MouseButton1Click:Connect(function()
@@ -1560,4 +1561,4 @@ Player.CharacterAdded:Connect(function(newChar)
     if invisibleEnabled then toggleInvisible(true) end
 end)
 
-print("APEX CHEAT V19.4 LOADED | FULL GAMES FUNCTIONS | ROUND CLOSE BTN | CREDITS: Apex + SWILL")
+print("APEX CHEAT V20.0 LOADED | ALL GAMES FUNCTIONS | NO CHECKS | CREDITS: Apex + SWILL")
