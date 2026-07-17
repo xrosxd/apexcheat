@@ -1,15 +1,17 @@
--- APEX CHEAT V19.4 | FIXED TELEPORT LOBBY + AUTO FARM STRENGTH
+-- APEX CHEAT V19.4 | NINJA LEGENDS FIXED
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
 local VirtualInput = game:GetService("VirtualInput")
 local Camera = workspace.CurrentCamera
 local Player = Players.LocalPlayer
+local Workspace = game:GetService("Workspace")
 
 local Char = Player.Character or Player.CharacterAdded:Wait()
 local Humanoid = Char:WaitForChild("Humanoid")
 local RootPart = Char:WaitForChild("HumanoidRootPart")
 
+-- ===== СОСТОЯНИЯ =====
 local flyEnabled = false
 local noclipEnabled = false
 local infiniteJump = false
@@ -27,14 +29,17 @@ local currentTabIndex = 1
 local blueHue = 0
 local waitingForKey = nil
 
+-- COMBAT
 local aimbotEnabled = false
 local triggerbotEnabled = false
 
+-- VISUALS
 local espEnabled = false
 local fullbrightEnabled = false
 local chamsEnabled = false
 local tracersEnabled = false
 
+-- FUNNY FUNCTIONS
 local spinEnabled = false
 local spinSpeed = 1
 local bobbingEnabled = false
@@ -45,15 +50,28 @@ local flingEnabled = false
 local flingPower = 50
 local invisibleEnabled = false
 
--- GAMES
+-- ===== GAMES STATES =====
+-- Ninja Legends
 local ninjaDuping = false
 local ninjaDupingConn = nil
 local ninjaDupedCount = 0
 
-local muscleAutoFarm = false
-local muscleFarmConn = nil
+-- MM2
+local mm2TeleportToGun = false
+local mm2TeleportToMurderer = false
+local mm2TeleportConn = nil
+local mm2RoleESP = false
+local mm2EspConn = nil
 
--- БИНДЫ
+-- Muscle Legends
+local muscleAutoWalk = false
+local muscleWalkConn = nil
+local muscleAutoClick = false
+local muscleClickConn = nil
+local musclePetDupe = false
+local muscleDupeConn = nil
+
+-- ===== БИНДЫ =====
 local binds = {
     fly = {key = Enum.KeyCode.F, label = "Fly"},
     noclip = {key = Enum.KeyCode.N, label = "Noclip"},
@@ -83,7 +101,7 @@ local function updateBindButton(funcName)
     end
 end
 
--- НОКЛИП
+-- ===== НОКЛИП =====
 local noclipConn = nil
 local function applyNoclip()
     if not noclipEnabled or not Char then return end
@@ -116,7 +134,7 @@ local function toggleNoclip(state)
     applyNoclip()
 end
 
--- ОСНОВНЫЕ ФУНКЦИИ
+-- ===== ФУНКЦИИ =====
 local flyConn = nil
 local flyBodyVel = nil
 local flyBodyGyro = nil
@@ -154,13 +172,6 @@ local function toggleFly(state)
         if UserInputService:IsKeyDown(Enum.KeyCode.LeftShift) then moveVec = moveVec - up end
         
         if moveVec.Magnitude > 0 then moveVec = moveVec.Unit * flySpeed else moveVec = Vector3.new(0,0,0) end
-        
-        local rayParams = RaycastParams.new()
-        rayParams.FilterType = Enum.RaycastFilterType.Blacklist
-        rayParams.FilterDescendantsInstances = {Char}
-        local rayResult = workspace:Raycast(RootPart.Position, moveVec * RunService.Heartbeat:Wait() * 1.2, rayParams)
-        if rayResult then flyBodyVel.Velocity = Vector3.new(0,0,0) return end
-        
         flyBodyVel.Velocity = moveVec
         flyBodyGyro.CFrame = Camera.CFrame
     end)
@@ -197,6 +208,7 @@ local function toggleAutoClicker(state)
     end)
 end
 
+-- ===== FREEZE =====
 local freezeConn = nil
 local freezeBodyPos = nil
 local function toggleFreeze(state)
@@ -221,7 +233,7 @@ local function toggleFreeze(state)
     end)
 end
 
--- COMBAT
+-- ===== COMBAT =====
 local aimbotConn = nil
 local function toggleAimbot(state)
     aimbotEnabled = state
@@ -286,7 +298,7 @@ local function toggleTriggerbot(state)
     end)
 end
 
--- VISUALS
+-- ===== VISUALS =====
 local espConn = nil
 local espHighlights = {}
 local function toggleEsp(state)
@@ -411,7 +423,7 @@ local function toggleTracers(state)
     end)
 end
 
--- FUNNY
+-- ===== FUNNY FUNCTIONS =====
 local spinConn = nil
 local function toggleSpin(state)
     spinEnabled = state
@@ -483,15 +495,16 @@ local function toggleInvisible(state)
     end
 end
 
--- ===== GAMES FUNCTIONS =====
+-- =====================================================
+-- ===== NINJA LEGENDS FUNCTIONS =====
+-- =====================================================
 
--- NINJA LEGENDS (DUPLICATE)
 local function getNinjaPets()
     local pets = {}
     local backpack = Player:FindFirstChild("Backpack")
     if backpack then
         for _, child in pairs(backpack:GetChildren()) do
-            if child:IsA("Tool") and child.Name:find("Pet") then
+            if child:IsA("Tool") and string.find(child.Name, "Pet") then
                 table.insert(pets, child)
             end
         end
@@ -536,53 +549,277 @@ local function toggleNinjaDup(state)
     end)
 end
 
--- MM2 (FIXED TELEPORT TO LOBBY)
-local function teleportToLobby()
-    local targetPlayer = nil
-    for _, v in pairs(Players:GetPlayers()) do
-        if v ~= Player and v.Character and v.Character:FindFirstChild("HumanoidRootPart") then
-            targetPlayer = v
-            break
+-- TELEPORT ALL ISLANDS (ОДНО НАЖАТИЕ)
+local function teleportAllIslands()
+    pcall(function()
+        local islands = {}
+        local islandFolder = Workspace:FindFirstChild("islandUnlockParts")
+        if islandFolder then
+            for _, part in pairs(islandFolder:GetChildren()) do
+                if part:IsA("BasePart") then
+                    table.insert(islands, part)
+                end
+            end
+        else
+            for _, obj in pairs(Workspace:GetChildren()) do
+                if obj:IsA("Model") and (string.find(obj.Name, "Island") or string.find(obj.Name, "Zone")) then
+                    local part = obj:FindFirstChild("HumanoidRootPart") or obj:FindFirstChild("Part") or obj:FindFirstChild("BasePart")
+                    if part then
+                        table.insert(islands, part)
+                    end
+                end
+            end
         end
-    end
-    if targetPlayer then
-        local targetRoot = targetPlayer.Character.HumanoidRootPart
-        if targetRoot then
-            RootPart.CFrame = targetRoot.CFrame + Vector3.new(0, 2, 0)
-            print("Teleported to lobby (near " .. targetPlayer.Name .. ")")
+        
+        -- Сортируем по Y координате (чтобы последний был самый высокий)
+        table.sort(islands, function(a, b)
+            return a.Position.Y < b.Position.Y
+        end)
+        
+        for i, part in ipairs(islands) do
+            if part and part.Position then
+                RootPart.CFrame = CFrame.new(part.Position + Vector3.new(0, 3, 0))
+                task.wait(0.3)
+            end
         end
-    else
-        RootPart.CFrame = CFrame.new(0, 50, 0)
-        print("No players found, teleported to center")
-    end
+        print("Teleported to " .. #islands .. " islands")
+    end)
 end
 
--- MUSCLE LEGENDS (FIXED AUTO FARM)
-local function toggleMuscleAutoFarm(state)
-    muscleAutoFarm = state
-    if muscleFarmConn then muscleFarmConn:Disconnect() muscleFarmConn = nil end
-    if not muscleAutoFarm then return end
-    muscleFarmConn = RunService.Heartbeat:Connect(function()
-        if not muscleAutoFarm then return end
-        pcall(function()
-            local remote = game:GetService("ReplicatedStorage"):FindFirstChild("Train") 
-            if not remote then
-                remote = game:GetService("ReplicatedStorage"):FindFirstChild("Workout")
+-- AUTO COLLECT ALL (ОДНО НАЖАТИЕ)
+local function autoCollectAll()
+    pcall(function()
+        local collected = 0
+        for _, obj in pairs(Workspace:GetChildren()) do
+            if obj:IsA("BasePart") and (string.find(obj.Name, "Soul") or string.find(obj.Name, "Chi") or string.find(obj.Name, "Karma") or string.find(obj.Name, "Chest") or string.find(obj.Name, "Crate")) then
+                RootPart.CFrame = CFrame.new(obj.Position + Vector3.new(0, 2, 0))
+                task.wait(0.15)
+                local detector = obj:FindFirstChild("ClickDetector")
+                if detector then
+                    detector:Fire()
+                    collected = collected + 1
+                    task.wait(0.1)
+                end
             end
-            if not remote then
-                remote = game:GetService("ReplicatedStorage"):FindFirstChild("Exercise")
+        end
+        print("Collected " .. collected .. " items")
+    end)
+end
+
+-- =====================================================
+-- ===== MM2 FUNCTIONS =====
+-- =====================================================
+
+local function getMM2Gun()
+    for _, obj in pairs(Workspace:GetChildren()) do
+        if obj:IsA("Tool") and (string.find(obj.Name, "Gun") or string.find(obj.Name, "Pistol") or string.find(obj.Name, "Revolver")) then
+            return obj
+        end
+    end
+    return nil
+end
+
+local function toggleMM2TeleportToGun(state)
+    mm2TeleportToGun = state
+    if mm2TeleportConn then mm2TeleportConn:Disconnect() mm2TeleportConn = nil end
+    if not mm2TeleportToGun and not mm2TeleportToMurderer then return end
+    mm2TeleportConn = RunService.Heartbeat:Connect(function()
+        if mm2TeleportToGun then
+            local gun = getMM2Gun()
+            if gun then
+                local part = gun:FindFirstChild("Handle") or gun
+                if part then
+                    RootPart.CFrame = part.CFrame + Vector3.new(0, 2, 0)
+                end
             end
-            if remote then
-                remote:FireServer()
-            else
-                local playerGui = Player.PlayerGui
-                if playerGui then
-                    for _, child in pairs(playerGui:GetDescendants()) do
-                        if child:IsA("TextButton") and (child.Name:find("Train") or child.Name:find("Workout") or child.Name:find("Exercise")) then
-                            child:Fire()
+        end
+        if mm2TeleportToMurderer then
+            for _, v in pairs(Players:GetPlayers()) do
+                if v ~= Player and v.Character then
+                    local hasKnife = false
+                    for _, child in pairs(v.Character:GetChildren()) do
+                        if child:IsA("Tool") and string.find(child.Name, "Knife") then
+                            hasKnife = true
                             break
                         end
                     end
+                    if hasKnife then
+                        local target = v.Character:FindFirstChild("HumanoidRootPart")
+                        if target then
+                            RootPart.CFrame = target.CFrame + Vector3.new(0, 2, 0)
+                            break
+                        end
+                    end
+                end
+            end
+        end
+    end)
+end
+
+local function toggleMM2TeleportToMurderer(state)
+    mm2TeleportToMurderer = state
+    if mm2TeleportConn then mm2TeleportConn:Disconnect() mm2TeleportConn = nil end
+    if not mm2TeleportToGun and not mm2TeleportToMurderer then return end
+    mm2TeleportConn = RunService.Heartbeat:Connect(function()
+        if mm2TeleportToGun then
+            local gun = getMM2Gun()
+            if gun then
+                local part = gun:FindFirstChild("Handle") or gun
+                if part then
+                    RootPart.CFrame = part.CFrame + Vector3.new(0, 2, 0)
+                end
+            end
+        end
+        if mm2TeleportToMurderer then
+            for _, v in pairs(Players:GetPlayers()) do
+                if v ~= Player and v.Character then
+                    local hasKnife = false
+                    for _, child in pairs(v.Character:GetChildren()) do
+                        if child:IsA("Tool") and string.find(child.Name, "Knife") then
+                            hasKnife = true
+                            break
+                        end
+                    end
+                    if hasKnife then
+                        local target = v.Character:FindFirstChild("HumanoidRootPart")
+                        if target then
+                            RootPart.CFrame = target.CFrame + Vector3.new(0, 2, 0)
+                            break
+                        end
+                    end
+                end
+            end
+        end
+    end)
+end
+
+local function toggleMM2RoleESP(state)
+    mm2RoleESP = state
+    if mm2EspConn then mm2EspConn:Disconnect() mm2EspConn = nil end
+    if not mm2RoleESP then
+        for _, h in pairs(game.CoreGui:GetChildren()) do
+            if h.Name == "MM2_RoleESP" then h:Destroy() end
+        end
+        return 
+    end
+    
+    local espFolder = Instance.new("Folder")
+    espFolder.Name = "MM2_RoleESP"
+    espFolder.Parent = game.CoreGui
+    
+    local function trackPlayer(player)
+        if player == Player then return end
+        local highlight = Instance.new("Highlight")
+        highlight.Name = player.Name .. "_ESP"
+        highlight.FillTransparency = 0.5
+        highlight.OutlineTransparency = 0
+        highlight.Parent = espFolder
+        
+        coroutine.wrap(function()
+            while player and player.Parent do
+                pcall(function()
+                    local char = player.Character
+                    if char and char:FindFirstChild("HumanoidRootPart") then
+                        highlight.Adornee = char
+                        local hasKnife = false
+                        local hasGun = false
+                        
+                        for _, child in pairs(char:GetChildren()) do
+                            if child:IsA("Tool") then
+                                if string.find(child.Name, "Knife") then hasKnife = true end
+                                if string.find(child.Name, "Gun") or string.find(child.Name, "Pistol") or string.find(child.Name, "Revolver") then hasGun = true end
+                            end
+                        end
+                        
+                        if hasKnife then
+                            highlight.FillColor = Color3.fromRGB(255, 0, 0)
+                        elseif hasGun then
+                            highlight.FillColor = Color3.fromRGB(0, 0, 255)
+                        else
+                            highlight.FillColor = Color3.fromRGB(0, 255, 0)
+                        end
+                        highlight.Enabled = true
+                    else
+                        highlight.Enabled = false
+                    end
+                end)
+                task.wait(1)
+            end
+            highlight:Destroy()
+        end)()
+    end
+    
+    for _, v in pairs(Players:GetPlayers()) do
+        trackPlayer(v)
+    end
+    Players.PlayerAdded:Connect(trackPlayer)
+end
+
+-- =====================================================
+-- ===== MUSCLE LEGENDS FUNCTIONS =====
+-- =====================================================
+
+local function toggleMuscleAutoWalk(state)
+    muscleAutoWalk = state
+    if muscleWalkConn then muscleWalkConn:Disconnect() muscleWalkConn = nil end
+    if not muscleAutoWalk then return end
+    muscleWalkConn = RunService.Heartbeat:Connect(function()
+        if muscleAutoWalk then
+            local moveVec = Camera.CFrame.LookVector * Vector3.new(1,0,1)
+            if moveVec.Magnitude > 0 then
+                RootPart.Velocity = moveVec.Unit * 16
+            else
+                RootPart.Velocity = Vector3.new(16, 0, 0)
+            end
+        end
+    end)
+end
+
+local function toggleMuscleAutoClick(state)
+    muscleAutoClick = state
+    if muscleClickConn then muscleClickConn:Disconnect() muscleClickConn = nil end
+    if not muscleAutoClick then return end
+    muscleClickConn = RunService.Heartbeat:Connect(function()
+        if muscleAutoClick then
+            pcall(function()
+                for _, obj in pairs(Workspace:GetDescendants()) do
+                    if obj:IsA("ClickDetector") then
+                        local parent = obj.Parent
+                        if parent and parent:IsA("BasePart") then
+                            RootPart.CFrame = parent.CFrame + Vector3.new(0, 2, 0)
+                            task.wait(0.1)
+                            obj:Fire()
+                            task.wait(0.3)
+                        end
+                    end
+                end
+            end)
+        end
+    end)
+end
+
+local function toggleMusclePetDupe(state)
+    musclePetDupe = state
+    if muscleDupeConn then muscleDupeConn:Disconnect() muscleDupeConn = nil end
+    if not musclePetDupe then return end
+    muscleDupeConn = RunService.Heartbeat:Connect(function()
+        if not musclePetDupe then return end
+        pcall(function()
+            local pets = {}
+            local backpack = Player:FindFirstChild("Backpack")
+            if backpack then
+                for _, child in pairs(backpack:GetChildren()) do
+                    if child:IsA("Tool") and (string.find(child.Name, "Pet") or string.find(child.Name, "Egg")) then
+                        table.insert(pets, child)
+                    end
+                end
+            end
+            for _, pet in pairs(pets) do
+                local cloned = pet:Clone()
+                cloned.Name = pet.Name .. "_DUP_" .. tostring(os.time() + math.random(1000,9999))
+                local parent = pet.Parent
+                if parent then
+                    cloned.Parent = parent
                 end
             end
         end)
@@ -620,6 +857,7 @@ bgLayer.BackgroundColor3 = Color3.fromRGB(6, 8, 18)
 bgLayer.BackgroundTransparency = 0.95
 bgLayer.BorderSizePixel = 0
 bgLayer.Parent = mainFrame
+
 local bgCorner = Instance.new("UICorner")
 bgCorner.CornerRadius = UDim.new(0, 16)
 bgCorner.Parent = bgLayer
@@ -630,6 +868,7 @@ local function pulseAnimation()
     mainStroke.Color = Color3.fromRGB(r*255, g*255, b*255)
 end
 
+-- ===== ВЕРХНЯЯ ПАНЕЛЬ =====
 local topBar = Instance.new("Frame")
 topBar.Size = UDim2.new(1, 0, 0, 50)
 topBar.BackgroundColor3 = Color3.fromRGB(8, 10, 24)
@@ -678,12 +917,14 @@ closeBtn.MouseButton1Click:Connect(function()
     mainFrame.Visible = false
 end)
 
+-- ===== ОСНОВНАЯ ОБЛАСТЬ =====
 local mainBody = Instance.new("Frame")
 mainBody.Size = UDim2.new(1, 0, 1, -50)
 mainBody.Position = UDim2.new(0, 0, 0, 50)
 mainBody.BackgroundTransparency = 1
 mainBody.Parent = mainFrame
 
+-- === ВКЛАДКИ (СЛЕВА) ===
 local tabSidebar = Instance.new("Frame")
 tabSidebar.Size = UDim2.new(0, 155, 1, 0)
 tabSidebar.BackgroundTransparency = 1
@@ -739,6 +980,7 @@ for i, data in ipairs(tabData) do
     table.insert(tabButtons, btn)
 end
 
+-- === КОНТЕНТ (СПРАВА) ===
 local contentArea = Instance.new("Frame")
 contentArea.Size = UDim2.new(1, -175, 1, -15)
 contentArea.Position = UDim2.new(0, 165, 0, 10)
@@ -769,6 +1011,7 @@ for i = 1, #tabData do
     tabContainers[i] = container
 end
 
+-- ===== UI ЭЛЕМЕНТЫ =====
 local function createToggleCard(parent, labelText, default, onChange)
     local card = Instance.new("Frame")
     card.Size = UDim2.new(1, 0, 0, 42)
@@ -822,7 +1065,7 @@ local function createToggleCard(parent, labelText, default, onChange)
         onChange(state)
     end)
     
-    return btn, function() return state end
+    return btn
 end
 
 local function createSliderCard(parent, labelText, minVal, maxVal, default, onChange)
@@ -940,28 +1183,28 @@ local function createBindCard(parent, funcName, labelText)
     return bindBtn
 end
 
--- ЗАПОЛНЕНИЕ ВКЛАДОК
+-- ===== ЗАПОЛНЕНИЕ ВКЛАДОК =====
 local vContainer = tabContainers[1]
-local espBtn, espGet = createToggleCard(vContainer, "ESP", false, toggleEsp)
-local fbBtn, fbGet = createToggleCard(vContainer, "FullBright", false, toggleFullbright)
-local chamsBtn, chamsGet = createToggleCard(vContainer, "Chams", false, toggleChams)
-local tracersBtn, tracersGet = createToggleCard(vContainer, "Tracers", false, toggleTracers)
+local espBtn = createToggleCard(vContainer, "ESP", false, toggleEsp)
+local fbBtn = createToggleCard(vContainer, "FullBright", false, toggleFullbright)
+local chamsBtn = createToggleCard(vContainer, "Chams", false, toggleChams)
+local tracersBtn = createToggleCard(vContainer, "Tracers", false, toggleTracers)
 
 local mContainer = tabContainers[2]
-local flyBtn, flyGet = createToggleCard(mContainer, "Fly", false, toggleFly)
-local noclipBtn, noclipGet = createToggleCard(mContainer, "Noclip", false, toggleNoclip)
-local jumpBtn, jumpGet = createToggleCard(mContainer, "Infinite Jump", false, toggleJump)
-local speedBtn, speedGet = createToggleCard(mContainer, "Speed", false, toggleSpeed)
-local freezeBtn, freezeGet = createToggleCard(mContainer, "Freeze", false, toggleFreeze)
+local flyBtn = createToggleCard(mContainer, "Fly", false, toggleFly)
+local noclipBtn = createToggleCard(mContainer, "Noclip", false, toggleNoclip)
+local jumpBtn = createToggleCard(mContainer, "Infinite Jump", false, toggleJump)
+local speedBtn = createToggleCard(mContainer, "Speed", false, toggleSpeed)
+local freezeBtn = createToggleCard(mContainer, "Freeze", false, toggleFreeze)
 createSliderCard(mContainer, "Speed Multiplier", 1, 15, 5, function(v) speedMultiplier = v; if speedEnabled then toggleSpeed(true) end end)
 createSliderCard(mContainer, "Fly Speed", 10, 200, 50, function(v) flySpeed = v end)
 
 local cContainer = tabContainers[3]
-local aimBtn, aimGet = createToggleCard(cContainer, "Aimbot", false, toggleAimbot)
-local trigBtn, trigGet = createToggleCard(cContainer, "Triggerbot", false, toggleTriggerbot)
+local aimBtn = createToggleCard(cContainer, "Aimbot", false, toggleAimbot)
+local trigBtn = createToggleCard(cContainer, "Triggerbot", false, toggleTriggerbot)
 
 local oContainer = tabContainers[4]
-local clickBtn, clickGet = createToggleCard(oContainer, "AutoClicker", false, toggleAutoClicker)
+local clickBtn = createToggleCard(oContainer, "AutoClicker", false, toggleAutoClicker)
 createSliderCard(oContainer, "Click Interval (s)", 0.1, 5, 0.5, function(v) 
     clickInterval = v 
     if autoClicker then 
@@ -971,15 +1214,15 @@ createSliderCard(oContainer, "Click Interval (s)", 0.1, 5, 0.5, function(v)
 end)
 
 local fContainer = tabContainers[5]
-local spinBtn, spinGet = createToggleCard(fContainer, "Spin", false, toggleSpin)
+local spinBtn = createToggleCard(fContainer, "Spin", false, toggleSpin)
 createSliderCard(fContainer, "Spin Speed", 0.1, 10, 1, function(v) spinSpeed = v end)
-local bobbingBtn, bobbingGet = createToggleCard(fContainer, "Bobbing", false, toggleBobbing)
+local bobbingBtn = createToggleCard(fContainer, "Bobbing", false, toggleBobbing)
 createSliderCard(fContainer, "Bobbing Height", 0.5, 5, 2, function(v) bobbingHeight = v end)
-local jitterBtn, jitterGet = createToggleCard(fContainer, "Jitter", false, toggleJitter)
+local jitterBtn = createToggleCard(fContainer, "Jitter", false, toggleJitter)
 createSliderCard(fContainer, "Jitter Strength", 0.1, 2, 0.5, function(v) jitterStrength = v end)
-local flingBtn, flingGet = createToggleCard(fContainer, "Fling", false, toggleFling)
+local flingBtn = createToggleCard(fContainer, "Fling", false, toggleFling)
 createSliderCard(fContainer, "Fling Power", 10, 150, 50, function(v) flingPower = v end)
-local invisibleBtn, invisibleGet = createToggleCard(fContainer, "Invisible", false, toggleInvisible)
+local invisibleBtn = createToggleCard(fContainer, "Invisible", false, toggleInvisible)
 
 -- ===== GAMES TAB =====
 local gContainer = tabContainers[6]
@@ -993,6 +1236,7 @@ gamesTitle.TextScaled = true
 gamesTitle.Font = Enum.Font.GothamBold
 gamesTitle.Parent = gContainer
 
+-- Под-вкладки
 local subTabPanel = Instance.new("Frame")
 subTabPanel.Size = UDim2.new(1, 0, 0, 40)
 subTabPanel.BackgroundTransparency = 1
@@ -1075,8 +1319,102 @@ end
 -- ===== NINJA LEGENDS =====
 local ninjaContainer = subTabContainers[1]
 
+-- ===== СОСТОЯНИЯ =====
+local eggHackActive = false
+
+-- ===== ФУНКЦИЯ ДЛЯ ВЗЛОМА ЯИЦ =====
+local function openEggWithHack()
+    pcall(function()
+        -- 1. Пытаемся найти баланс Чи и временно увеличить
+        local chiValue = nil
+        local chiObject = nil
+        
+        -- Ищем Чи в разных местах
+        local playerStats = Player:FindFirstChild("leaderstats")
+        if playerStats then
+            for _, child in pairs(playerStats:GetChildren()) do
+                if child:IsA("NumberValue") and (string.find(child.Name, "Chi") or string.find(child.Name, "chi") or string.find(child.Name, "Energy")) then
+                    chiObject = child
+                    chiValue = child.Value
+                    break
+                end
+            end
+        end
+        
+        if not chiObject then
+            -- Ищем в других местах
+            for _, obj in pairs(Player:GetChildren()) do
+                if obj:IsA("NumberValue") and (string.find(obj.Name, "Chi") or string.find(obj.Name, "chi") or string.find(obj.Name, "Energy") or string.find(obj.Name, "Balance")) then
+                    chiObject = obj
+                    chiValue = obj.Value
+                    break
+                end
+            end
+        end
+        
+        -- 2. Если нашли Чи - временно ставим 999999999
+        if chiObject then
+            chiObject.Value = 999999999
+            task.wait(0.1)
+        end
+        
+        -- 3. Ищем кнопку открытия яйца и кликаем
+        local playerGui = Player:FindFirstChild("PlayerGui")
+        if playerGui then
+            for _, child in pairs(playerGui:GetDescendants()) do
+                if child:IsA("TextButton") and (string.find(child.Name, "Egg") or string.find(child.Name, "Open") or string.find(child.Name, "Hatch") or string.find(child.Text, "Open") or string.find(child.Text, "Hatch")) then
+                    if child.Visible then
+                        child:Fire()
+                        print("[Egg Hack] Opened egg via button: " .. child.Name)
+                        task.wait(0.1)
+                    end
+                end
+                -- Ищем ImageButton тоже
+                if child:IsA("ImageButton") and (string.find(child.Name, "Egg") or string.find(child.Name, "Open") or string.find(child.Name, "Buy")) then
+                    if child.Visible then
+                        child:Fire()
+                        print("[Egg Hack] Opened egg via ImageButton: " .. child.Name)
+                        task.wait(0.1)
+                    end
+                end
+            end
+        end
+        
+        -- 4. Пытаемся через RemoteEvent
+        local remote = ReplicatedStorage:FindFirstChild("OpenEgg") or 
+                      ReplicatedStorage:FindFirstChild("HatchEgg") or
+                      ReplicatedStorage:FindFirstChild("BuyEgg") or
+                      ReplicatedStorage:FindFirstChild("PurchaseEgg") or
+                      ReplicatedStorage:FindFirstChild("EggOpen")
+        if remote then
+            remote:FireServer()
+            print("[Egg Hack] Fired RemoteEvent: " .. remote.Name)
+            task.wait(0.1)
+        end
+        
+        -- 5. Ищем ClickDetector на яйцах в Workspace
+        for _, obj in pairs(Workspace:GetChildren()) do
+            if obj:IsA("Model") and (string.find(obj.Name, "Egg") or string.find(obj.Name, "Chest")) then
+                local click = obj:FindFirstChild("ClickDetector")
+                if click then
+                    click:Fire()
+                    print("[Egg Hack] Clicked egg in workspace: " .. obj.Name)
+                    task.wait(0.1)
+                end
+            end
+        end
+        
+        -- 6. Возвращаем Чи обратно (если нашли)
+        if chiObject and chiValue then
+            task.wait(0.2)
+            chiObject.Value = chiValue
+        end
+    end)
+end
+
+-- 1. DUPLICATE PETS
 local dupCard = Instance.new("Frame")
-dupCard.Size = UDim2.new(1, 0, 0, 60)
+dupCard.Size = UDim2.new(1, 0, 0, 42)
 dupCard.BackgroundColor3 = Color3.fromRGB(12, 12, 28)
 dupCard.BackgroundTransparency = 0.3
 dupCard.BorderSizePixel = 0
@@ -1093,21 +1431,21 @@ dupCardStroke.Transparency = 0.5
 dupCardStroke.Parent = dupCard
 
 local dupLabel = Instance.new("TextLabel")
-dupLabel.Size = UDim2.new(0.5, 0, 1, 0)
+dupLabel.Size = UDim2.new(0.65, 0, 1, 0)
 dupLabel.Position = UDim2.new(0, 16, 0, 0)
 dupLabel.BackgroundTransparency = 1
-dupLabel.Text = "DUPLICATE PETS"
+dupLabel.Text = "⚠️ DUPLICATE PETS"
 dupLabel.TextColor3 = Color3.fromRGB(255, 200, 50)
 dupLabel.TextXAlignment = Enum.TextXAlignment.Left
 dupLabel.TextScaled = true
-dupLabel.Font = Enum.Font.GothamBold
+dupLabel.Font = Enum.Font.Gotham
 dupLabel.Parent = dupCard
 
 local dupBtn = Instance.new("TextButton")
-dupBtn.Size = UDim2.new(0, 100, 0, 36)
-dupBtn.Position = UDim2.new(0.72, 0, 0.2, 0)
-dupBtn.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
-dupBtn.Text = "START DUP"
+dupBtn.Size = UDim2.new(0, 70, 0, 30)
+dupBtn.Position = UDim2.new(0.78, 0, 0.14, 0)
+dupBtn.BackgroundColor3 = Color3.fromRGB(40, 40, 70)
+dupBtn.Text = "OFF"
 dupBtn.TextColor3 = Color3.new(1,1,1)
 dupBtn.TextScaled = true
 dupBtn.Font = Enum.Font.GothamBold
@@ -1119,67 +1457,185 @@ local dupBtnCorner = Instance.new("UICorner")
 dupBtnCorner.CornerRadius = UDim.new(0, 6)
 dupBtnCorner.Parent = dupBtn
 
-local counterLabel = Instance.new("TextLabel")
-counterLabel.Size = UDim2.new(0.2, 0, 0.5, 0)
-counterLabel.Position = UDim2.new(0.78, 0, 0.55, 0)
-counterLabel.BackgroundTransparency = 1
-counterLabel.Text = "Duped: 0"
-counterLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
-counterLabel.TextScaled = true
-counterLabel.Font = Enum.Font.Gotham
-counterLabel.Parent = dupCard
-
 dupBtn.MouseButton1Click:Connect(function()
     ninjaDuping = not ninjaDuping
     toggleNinjaDup(ninjaDuping)
-    dupBtn.Text = ninjaDuping and "STOP DUP" or "START DUP"
-    dupBtn.BackgroundColor3 = ninjaDuping and Color3.fromRGB(50, 200, 50) or Color3.fromRGB(200, 50, 50)
+    dupBtn.Text = ninjaDuping and "ON" or "OFF"
+    dupBtn.BackgroundColor3 = ninjaDuping and Color3.fromRGB(0, 180, 255) or Color3.fromRGB(40, 40, 70)
 end)
 
-local counterUpdateConn = RunService.Heartbeat:Connect(function()
-    if counterLabel then
-        counterLabel.Text = "Duped: " .. ninjaDupedCount
-    end
+-- 2. Teleport All Islands
+local islandBtn = Instance.new("TextButton")
+islandBtn.Size = UDim2.new(1, 0, 0, 42)
+islandBtn.Position = UDim2.new(0, 0, 0, 50)
+islandBtn.BackgroundColor3 = Color3.fromRGB(0, 150, 200)
+islandBtn.Text = "🏝️ TELEPORT ALL ISLANDS"
+islandBtn.TextColor3 = Color3.new(1,1,1)
+islandBtn.TextScaled = true
+islandBtn.Font = Enum.Font.GothamBold
+islandBtn.BorderSizePixel = 0
+islandBtn.Parent = ninjaContainer
+islandBtn.AutoButtonColor = false
+local islandBtnCorner = Instance.new("UICorner")
+islandBtnCorner.CornerRadius = UDim.new(0, 8)
+islandBtnCorner.Parent = islandBtn
+
+islandBtn.MouseButton1Click:Connect(function()
+    pcall(function()
+        local islands = {}
+        local islandFolder = Workspace:FindFirstChild("islandUnlockParts")
+        if islandFolder then
+            for _, part in pairs(islandFolder:GetChildren()) do
+                if part:IsA("BasePart") then
+                    table.insert(islands, part)
+                end
+            end
+        else
+            for _, obj in pairs(Workspace:GetChildren()) do
+                if obj:IsA("Model") and (string.find(obj.Name, "Island") or string.find(obj.Name, "Zone")) then
+                    local part = obj:FindFirstChild("HumanoidRootPart") or obj:FindFirstChild("Part") or obj:FindFirstChild("BasePart")
+                    if part then
+                        table.insert(islands, part)
+                    end
+                end
+            end
+        end
+        
+        table.sort(islands, function(a, b)
+            return a.Position.Y < b.Position.Y
+        end)
+        
+        for i, part in ipairs(islands) do
+            if part and part.Position then
+                RootPart.CFrame = CFrame.new(part.Position + Vector3.new(0, 3, 0))
+                task.wait(0.3)
+            end
+        end
+    end)
+    islandBtn.BackgroundColor3 = Color3.fromRGB(50, 200, 50)
+    task.wait(0.5)
+    islandBtn.BackgroundColor3 = Color3.fromRGB(0, 150, 200)
 end)
 
-local infoLabel = Instance.new("TextLabel")
-infoLabel.Size = UDim2.new(1, 0, 0, 30)
-infoLabel.Position = UDim2.new(0, 0, 0, 65)
-infoLabel.BackgroundTransparency = 1
-infoLabel.Text = "⚠️ Используй в одиночной игре. Не дупай слишком много."
-infoLabel.TextColor3 = Color3.fromRGB(255, 100, 100)
-infoLabel.TextScaled = true
-infoLabel.Font = Enum.Font.Gotham
-infoLabel.Parent = ninjaContainer
-infoLabel.TextWrapped = true
+-- 3. Auto Collect All
+local collectBtn = Instance.new("TextButton")
+collectBtn.Size = UDim2.new(1, 0, 0, 42)
+collectBtn.Position = UDim2.new(0, 0, 0, 100)
+collectBtn.BackgroundColor3 = Color3.fromRGB(200, 150, 0)
+collectBtn.Text = "📦 AUTO COLLECT ALL"
+collectBtn.TextColor3 = Color3.new(1,1,1)
+collectBtn.TextScaled = true
+collectBtn.Font = Enum.Font.GothamBold
+collectBtn.BorderSizePixel = 0
+collectBtn.Parent = ninjaContainer
+collectBtn.AutoButtonColor = false
+local collectBtnCorner = Instance.new("UICorner")
+collectBtnCorner.CornerRadius = UDim.new(0, 8)
+collectBtnCorner.Parent = collectBtn
+
+collectBtn.MouseButton1Click:Connect(function()
+    pcall(function()
+        for _, obj in pairs(Workspace:GetChildren()) do
+            if obj:IsA("BasePart") and (string.find(obj.Name, "Soul") or string.find(obj.Name, "Chi") or string.find(obj.Name, "Karma") or string.find(obj.Name, "Chest") or string.find(obj.Name, "Crate")) then
+                RootPart.CFrame = CFrame.new(obj.Position + Vector3.new(0, 2, 0))
+                task.wait(0.15)
+                local detector = obj:FindFirstChild("ClickDetector")
+                if detector then
+                    detector:Fire()
+                    task.wait(0.1)
+                end
+            end
+        end
+    end)
+    collectBtn.BackgroundColor3 = Color3.fromRGB(50, 200, 50)
+    task.wait(0.5)
+    collectBtn.BackgroundColor3 = Color3.fromRGB(200, 150, 0)
+end)
+
+-- 4. 🥚 EGG HACK (включается/выключается)
+local eggCard = Instance.new("Frame")
+eggCard.Size = UDim2.new(1, 0, 0, 42)
+eggCard.Position = UDim2.new(0, 0, 0, 150)
+eggCard.BackgroundColor3 = Color3.fromRGB(12, 12, 28)
+eggCard.BackgroundTransparency = 0.3
+eggCard.BorderSizePixel = 0
+eggCard.Parent = ninjaContainer
+
+local eggCardCorner = Instance.new("UICorner")
+eggCardCorner.CornerRadius = UDim.new(0, 8)
+eggCardCorner.Parent = eggCard
+
+local eggCardStroke = Instance.new("UIStroke")
+eggCardStroke.Color = Color3.fromRGB(30, 40, 80)
+eggCardStroke.Thickness = 1.5
+eggCardStroke.Transparency = 0.5
+eggCardStroke.Parent = eggCard
+
+local eggLabel = Instance.new("TextLabel")
+eggLabel.Size = UDim2.new(0.65, 0, 1, 0)
+eggLabel.Position = UDim2.new(0, 16, 0, 0)
+eggLabel.BackgroundTransparency = 1
+eggLabel.Text = "🥚 EGG HACK (Press E)"
+eggLabel.TextColor3 = Color3.fromRGB(255, 100, 255)
+eggLabel.TextXAlignment = Enum.TextXAlignment.Left
+eggLabel.TextScaled = true
+eggLabel.Font = Enum.Font.Gotham
+eggLabel.Parent = eggCard
+
+local eggBtn = Instance.new("TextButton")
+eggBtn.Size = UDim2.new(0, 70, 0, 30)
+eggBtn.Position = UDim2.new(0.78, 0, 0.14, 0)
+eggBtn.BackgroundColor3 = Color3.fromRGB(40, 40, 70)
+eggBtn.Text = "OFF"
+eggBtn.TextColor3 = Color3.new(1,1,1)
+eggBtn.TextScaled = true
+eggBtn.Font = Enum.Font.GothamBold
+eggBtn.BorderSizePixel = 0
+eggBtn.Parent = eggCard
+eggBtn.AutoButtonColor = false
+
+local eggBtnCorner = Instance.new("UICorner")
+eggBtnCorner.CornerRadius = UDim.new(0, 6)
+eggBtnCorner.Parent = eggBtn
+
+eggBtn.MouseButton1Click:Connect(function()
+    eggHackActive = not eggHackActive
+    eggBtn.Text = eggHackActive and "ON" or "OFF"
+    eggBtn.BackgroundColor3 = eggHackActive and Color3.fromRGB(0, 180, 255) or Color3.fromRGB(40, 40, 70)
+    print("Egg Hack: " .. (eggHackActive and "ACTIVE" or "DISABLED"))
+end)
 
 -- ===== MM2 =====
 local mm2Container = subTabContainers[2]
 
-local lobbyBtn = Instance.new("TextButton")
-lobbyBtn.Size = UDim2.new(1, 0, 0, 40)
-lobbyBtn.Position = UDim2.new(0, 0, 0, 10)
-lobbyBtn.BackgroundColor3 = Color3.fromRGB(0, 100, 200)
-lobbyBtn.Text = "Teleport to Lobby"
-lobbyBtn.TextColor3 = Color3.new(1,1,1)
-lobbyBtn.TextScaled = true
-lobbyBtn.Font = Enum.Font.GothamBold
-lobbyBtn.BorderSizePixel = 0
-lobbyBtn.Parent = mm2Container
+local mm2GunBtn = createToggleCard(mm2Container, "TP to Gun", false, function(state)
+    toggleMM2TeleportToGun(state)
+end)
 
-local lobbyBtnCorner = Instance.new("UICorner")
-lobbyBtnCorner.CornerRadius = UDim.new(0, 8)
-lobbyBtnCorner.Parent = lobbyBtn
+local mm2MurdererBtn = createToggleCard(mm2Container, "TP to Murderer", false, function(state)
+    toggleMM2TeleportToMurderer(state)
+end)
 
-lobbyBtn.MouseButton1Click:Connect(function()
-    teleportToLobby()
+local mm2EspBtn = createToggleCard(mm2Container, "Role ESP", false, function(state)
+    toggleMM2RoleESP(state)
 end)
 
 -- ===== MUSCLE LEGENDS =====
 local muscleContainer = subTabContainers[3]
-local farmBtn, farmGet = createToggleCard(muscleContainer, "Auto Farm Strength", false, toggleMuscleAutoFarm)
 
--- ===== BINDS =====
+local walkBtn = createToggleCard(muscleContainer, "Auto Walk (Treadmill)", false, function(state)
+    toggleMuscleAutoWalk(state)
+end)
+
+local clickBtn = createToggleCard(muscleContainer, "Auto Click Machines", false, function(state)
+    toggleMuscleAutoClick(state)
+end)
+
+local dupeBtn = createToggleCard(muscleContainer, "⚠️ DUPE PETS (RISK)", false, function(state)
+    toggleMusclePetDupe(state)
+end)
+
+-- ===== BINDS TAB =====
 local bContainer = tabContainers[7]
 createBindCard(bContainer, "fly", "Fly")
 createBindCard(bContainer, "noclip", "Noclip")
@@ -1199,8 +1655,10 @@ createBindCard(bContainer, "jitter", "Jitter")
 createBindCard(bContainer, "fling", "Fling")
 createBindCard(bContainer, "invisible", "Invisible")
 
+-- ===== ОБРАБОТЧИК БИНДОВ =====
 UserInputService.InputBegan:Connect(function(input, gp)
     if gp then return end
+    
     if waitingForKey then
         if input.KeyCode == Enum.KeyCode.Backspace then
             binds[waitingForKey].key = nil
@@ -1222,11 +1680,13 @@ UserInputService.InputBegan:Connect(function(input, gp)
         end
         return
     end
+    
     if input.KeyCode == Enum.KeyCode.Backspace then
         menuOpen = not menuOpen
         mainFrame.Visible = menuOpen
         return
     end
+    
     for funcName, bind in pairs(binds) do
         if bind.key and input.KeyCode == bind.key then
             if funcName == "fly" then
@@ -1319,6 +1779,7 @@ UserInputService.InputBegan:Connect(function(input, gp)
     end
 end)
 
+-- ===== КОЛЕСО МЫШИ =====
 UserInputService.InputChanged:Connect(function(input, gp)
     if gp or not flyEnabled then return end
     if input.UserInputType == Enum.UserInputType.MouseWheel then
@@ -1326,10 +1787,12 @@ UserInputService.InputChanged:Connect(function(input, gp)
     end
 end)
 
+-- ===== АНИМАЦИЯ =====
 RunService.Heartbeat:Connect(function()
     pulseAnimation()
 end)
 
+-- ===== ПЕРЕРОЖДЕНИЕ =====
 Player.CharacterAdded:Connect(function(newChar)
     Char = newChar
     Humanoid = Char:WaitForChild("Humanoid")
@@ -1352,4 +1815,4 @@ Player.CharacterAdded:Connect(function(newChar)
     if invisibleEnabled then toggleInvisible(true) end
 end)
 
-print("APEX CHEAT V19.4 LOADED | FIXED TELEPORT LOBBY + AUTO FARM STRENGTH | CREDITS: Apex + SWILLr")
+print("APEX CHEAT V19.4 LOADED | NINJA LEGENDS FIXED | CREDITS: Apex + SWILL")
