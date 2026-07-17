@@ -1,4 +1,4 @@
--- APEX CHEAT V19.4 | +TELEPORT LOBBY +AUTO FARM STRENGTH
+-- APEX CHEAT V19.4 | FIXED TELEPORT LOBBY + AUTO FARM STRENGTH
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
@@ -6,12 +6,10 @@ local VirtualInput = game:GetService("VirtualInput")
 local Camera = workspace.CurrentCamera
 local Player = Players.LocalPlayer
 
--- ===== ПЕРСОНАЖ =====
 local Char = Player.Character or Player.CharacterAdded:Wait()
 local Humanoid = Char:WaitForChild("Humanoid")
 local RootPart = Char:WaitForChild("HumanoidRootPart")
 
--- ===== СОСТОЯНИЯ =====
 local flyEnabled = false
 local noclipEnabled = false
 local infiniteJump = false
@@ -29,17 +27,14 @@ local currentTabIndex = 1
 local blueHue = 0
 local waitingForKey = nil
 
--- COMBAT
 local aimbotEnabled = false
 local triggerbotEnabled = false
 
--- VISUALS
 local espEnabled = false
 local fullbrightEnabled = false
 local chamsEnabled = false
 local tracersEnabled = false
 
--- FUNNY
 local spinEnabled = false
 local spinSpeed = 1
 local bobbingEnabled = false
@@ -50,20 +45,15 @@ local flingEnabled = false
 local flingPower = 50
 local invisibleEnabled = false
 
--- ===== GAMES =====
--- NINJA LEGENDS (дуп)
+-- GAMES
 local ninjaDuping = false
 local ninjaDupingConn = nil
 local ninjaDupedCount = 0
 
--- MM2 (телепорт в лобби)
-local mm2TeleportLobby = false
-
--- MUSCLE LEGENDS (автофарм силы)
 local muscleAutoFarm = false
 local muscleFarmConn = nil
 
--- ===== БИНДЫ =====
+-- БИНДЫ
 local binds = {
     fly = {key = Enum.KeyCode.F, label = "Fly"},
     noclip = {key = Enum.KeyCode.N, label = "Noclip"},
@@ -93,7 +83,7 @@ local function updateBindButton(funcName)
     end
 end
 
--- ===== НОКЛИП =====
+-- НОКЛИП
 local noclipConn = nil
 local function applyNoclip()
     if not noclipEnabled or not Char then return end
@@ -126,7 +116,7 @@ local function toggleNoclip(state)
     applyNoclip()
 end
 
--- ===== ФУНКЦИИ =====
+-- ОСНОВНЫЕ ФУНКЦИИ
 local flyConn = nil
 local flyBodyVel = nil
 local flyBodyGyro = nil
@@ -207,7 +197,6 @@ local function toggleAutoClicker(state)
     end)
 end
 
--- ===== FREEZE =====
 local freezeConn = nil
 local freezeBodyPos = nil
 local function toggleFreeze(state)
@@ -232,7 +221,7 @@ local function toggleFreeze(state)
     end)
 end
 
--- ===== COMBAT =====
+-- COMBAT
 local aimbotConn = nil
 local function toggleAimbot(state)
     aimbotEnabled = state
@@ -297,7 +286,7 @@ local function toggleTriggerbot(state)
     end)
 end
 
--- ===== VISUALS =====
+-- VISUALS
 local espConn = nil
 local espHighlights = {}
 local function toggleEsp(state)
@@ -422,7 +411,7 @@ local function toggleTracers(state)
     end)
 end
 
--- ===== FUNNY =====
+-- FUNNY
 local spinConn = nil
 local function toggleSpin(state)
     spinEnabled = state
@@ -547,12 +536,28 @@ local function toggleNinjaDup(state)
     end)
 end
 
--- MM2 (Teleport to Lobby)
+-- MM2 (FIXED TELEPORT TO LOBBY)
 local function teleportToLobby()
-    RootPart.CFrame = CFrame.new(0, 100, 0)
+    local targetPlayer = nil
+    for _, v in pairs(Players:GetPlayers()) do
+        if v ~= Player and v.Character and v.Character:FindFirstChild("HumanoidRootPart") then
+            targetPlayer = v
+            break
+        end
+    end
+    if targetPlayer then
+        local targetRoot = targetPlayer.Character.HumanoidRootPart
+        if targetRoot then
+            RootPart.CFrame = targetRoot.CFrame + Vector3.new(0, 2, 0)
+            print("Teleported to lobby (near " .. targetPlayer.Name .. ")")
+        end
+    else
+        RootPart.CFrame = CFrame.new(0, 50, 0)
+        print("No players found, teleported to center")
+    end
 end
 
--- MUSCLE LEGENDS (Auto Farm Strength)
+-- MUSCLE LEGENDS (FIXED AUTO FARM)
 local function toggleMuscleAutoFarm(state)
     muscleAutoFarm = state
     if muscleFarmConn then muscleFarmConn:Disconnect() muscleFarmConn = nil end
@@ -560,16 +565,24 @@ local function toggleMuscleAutoFarm(state)
     muscleFarmConn = RunService.Heartbeat:Connect(function()
         if not muscleAutoFarm then return end
         pcall(function()
-            -- Ищем кнопку тренировки или Remote-событие
-            local trainRemote = game:GetService("ReplicatedStorage"):FindFirstChild("Train")
-            if trainRemote then
-                trainRemote:FireServer()
+            local remote = game:GetService("ReplicatedStorage"):FindFirstChild("Train") 
+            if not remote then
+                remote = game:GetService("ReplicatedStorage"):FindFirstChild("Workout")
+            end
+            if not remote then
+                remote = game:GetService("ReplicatedStorage"):FindFirstChild("Exercise")
+            end
+            if remote then
+                remote:FireServer()
             else
-                -- Если нет Remote, кликаем по кнопке на UI
                 local playerGui = Player.PlayerGui
                 if playerGui then
-                    local trainBtn = playerGui:FindFirstChild("TrainButton")
-                    if trainBtn then trainBtn:Fire() end
+                    for _, child in pairs(playerGui:GetDescendants()) do
+                        if child:IsA("TextButton") and (child.Name:find("Train") or child.Name:find("Workout") or child.Name:find("Exercise")) then
+                            child:Fire()
+                            break
+                        end
+                    end
                 end
             end
         end)
@@ -607,7 +620,6 @@ bgLayer.BackgroundColor3 = Color3.fromRGB(6, 8, 18)
 bgLayer.BackgroundTransparency = 0.95
 bgLayer.BorderSizePixel = 0
 bgLayer.Parent = mainFrame
-
 local bgCorner = Instance.new("UICorner")
 bgCorner.CornerRadius = UDim.new(0, 16)
 bgCorner.Parent = bgLayer
@@ -618,7 +630,6 @@ local function pulseAnimation()
     mainStroke.Color = Color3.fromRGB(r*255, g*255, b*255)
 end
 
--- ===== ВЕРХНЯЯ ПАНЕЛЬ =====
 local topBar = Instance.new("Frame")
 topBar.Size = UDim2.new(1, 0, 0, 50)
 topBar.BackgroundColor3 = Color3.fromRGB(8, 10, 24)
@@ -667,7 +678,6 @@ closeBtn.MouseButton1Click:Connect(function()
     mainFrame.Visible = false
 end)
 
--- ===== ОСНОВНАЯ ОБЛАСТЬ =====
 local mainBody = Instance.new("Frame")
 mainBody.Size = UDim2.new(1, 0, 1, -50)
 mainBody.Position = UDim2.new(0, 0, 0, 50)
@@ -759,7 +769,6 @@ for i = 1, #tabData do
     tabContainers[i] = container
 end
 
--- ===== UI ЭЛЕМЕНТЫ =====
 local function createToggleCard(parent, labelText, default, onChange)
     local card = Instance.new("Frame")
     card.Size = UDim2.new(1, 0, 0, 42)
@@ -931,7 +940,7 @@ local function createBindCard(parent, funcName, labelText)
     return bindBtn
 end
 
--- ===== ЗАПОЛНЕНИЕ ВКЛАДОК =====
+-- ЗАПОЛНЕНИЕ ВКЛАДОК
 local vContainer = tabContainers[1]
 local espBtn, espGet = createToggleCard(vContainer, "ESP", false, toggleEsp)
 local fbBtn, fbGet = createToggleCard(vContainer, "FullBright", false, toggleFullbright)
@@ -1147,7 +1156,6 @@ infoLabel.TextWrapped = true
 -- ===== MM2 =====
 local mm2Container = subTabContainers[2]
 
--- Кнопка телепорта в лобби
 local lobbyBtn = Instance.new("TextButton")
 lobbyBtn.Size = UDim2.new(1, 0, 0, 40)
 lobbyBtn.Position = UDim2.new(0, 0, 0, 10)
@@ -1193,7 +1201,6 @@ createBindCard(bContainer, "invisible", "Invisible")
 
 UserInputService.InputBegan:Connect(function(input, gp)
     if gp then return end
-    
     if waitingForKey then
         if input.KeyCode == Enum.KeyCode.Backspace then
             binds[waitingForKey].key = nil
@@ -1215,13 +1222,11 @@ UserInputService.InputBegan:Connect(function(input, gp)
         end
         return
     end
-    
     if input.KeyCode == Enum.KeyCode.Backspace then
         menuOpen = not menuOpen
         mainFrame.Visible = menuOpen
         return
     end
-    
     for funcName, bind in pairs(binds) do
         if bind.key and input.KeyCode == bind.key then
             if funcName == "fly" then
@@ -1347,4 +1352,4 @@ Player.CharacterAdded:Connect(function(newChar)
     if invisibleEnabled then toggleInvisible(true) end
 end)
 
-print("APEX CHEAT V19.4 LOADED | +TELEPORT LOBBY +AUTO FARM STRENGTH | CREDITS: Apex + SWILL")
+print("APEX CHEAT V19.4 LOADED | FIXED TELEPORT LOBBY + AUTO FARM STRENGTH | CREDITS: Apex + SWILL")
