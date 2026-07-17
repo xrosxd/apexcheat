@@ -1,4 +1,4 @@
--- APEX CHEAT V20.0 | FULL GAMES MODULES
+-- APEX CHEAT V20.1 | FULL GAMES + UPDATE TAB
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
@@ -764,8 +764,8 @@ screenGui.Parent = Player:WaitForChild("PlayerGui")
 screenGui.ResetOnSpawn = false
 
 local mainFrame = Instance.new("Frame")
-mainFrame.Size = UDim2.new(0, 820, 0, 580)
-mainFrame.Position = UDim2.new(0.5, -410, 0.5, -290)
+mainFrame.Size = UDim2.new(0, 820, 0, 620)
+mainFrame.Position = UDim2.new(0.5, -410, 0.5, -310)
 mainFrame.BackgroundColor3 = Color3.fromRGB(6, 8, 18)
 mainFrame.BackgroundTransparency = 0.05
 mainFrame.BorderSizePixel = 0
@@ -810,10 +810,10 @@ topCorner.CornerRadius = UDim.new(0, 16)
 topCorner.Parent = topBar
 
 local titleLabel = Instance.new("TextLabel")
-titleLabel.Size = UDim2.new(0.4, 0, 1, 0)
+titleLabel.Size = UDim2.new(0.3, 0, 1, 0)
 titleLabel.Position = UDim2.new(0, 20, 0, 0)
 titleLabel.BackgroundTransparency = 1
-titleLabel.Text = "APEX CHEAT V20.0"
+titleLabel.Text = "APEX V20.1"
 titleLabel.TextColor3 = Color3.fromRGB(0, 180, 255)
 titleLabel.TextScaled = true
 titleLabel.Font = Enum.Font.GothamBold
@@ -821,10 +821,10 @@ titleLabel.TextXAlignment = Enum.TextXAlignment.Left
 titleLabel.Parent = topBar
 
 local creditLabel = Instance.new("TextLabel")
-creditLabel.Size = UDim2.new(0.3, 0, 1, 0)
-creditLabel.Position = UDim2.new(0.45, 0, 0, 0)
+creditLabel.Size = UDim2.new(0.4, 0, 1, 0)
+creditLabel.Position = UDim2.new(0.35, 0, 0, 0)
 creditLabel.BackgroundTransparency = 1
-creditLabel.Text = "by Apex + SWILL"
+creditLabel.Text = "by Apex + SWILL | v20.1"
 creditLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
 creditLabel.TextScaled = true
 creditLabel.Font = Enum.Font.Gotham
@@ -874,6 +874,7 @@ local tabData = {
     {name = "Other"},
     {name = "Funny"},
     {name = "Games"},
+    {name = "Update"},
     {name = "Binds"}
 }
 
@@ -1426,7 +1427,32 @@ createGameToggle(muscleContainer, "Auto Collect Rewards", toggleMuscleAutoCollec
 createGameToggle(muscleContainer, "No Fatigue", toggleMuscleNoFatigue)
 createGameToggle(muscleContainer, "Fast Grind", toggleMuscleFastGrind)
 
-local bContainer = tabContainers[7]
+-- ===== UPDATE TAB (индекс 7) =====
+local uContainer = tabContainers[7]
+
+local updateTitle = Instance.new("TextLabel")
+updateTitle.Size = UDim2.new(1, 0, 0, 40)
+updateTitle.BackgroundTransparency = 1
+updateTitle.Text = "=== APEX CHEAT V20.1 — UPDATE LOG ==="
+updateTitle.TextColor3 = Color3.fromRGB(0, 255, 200)
+updateTitle.TextScaled = true
+updateTitle.Font = Enum.Font.GothamBold
+updateTitle.Parent = uContainer
+
+local updateText = Instance.new("TextLabel")
+updateText.Size = UDim2.new(1, 0, 0, 450)
+updateText.Position = UDim2.new(0, 10, 0, 45)
+updateText.BackgroundTransparency = 1
+updateText.Text = "✅ НОВАЯ ВКЛАДКА «UPDATE» — список изменений.\n\n✅ ДОБАВЛЕНЫ НОВЫЕ ФУНКЦИИ В РАЗДЕЛЫ GAMES:\n\n🔹 NINJA LEGENDS:\n   • Auto Farm — автоматический фарм мобов\n   • Auto Upgrade — прокачка навыков\n   • Auto Collect — сбор лута\n   • Auto Rebirth — автоматический ребёрт\n\n🔹 MM2:\n   • Auto Shoot — автострельба в убийцу\n   • Coin Farm — сбор монет\n   • ESP Roles — подсветка ролей\n   • Always Win — автоадаптация под роль\n\n🔹 MUSCLE LEGENDS:\n   • Auto Rebirth — автоматический ребёрт\n   • Auto Collect Rewards — сбор наград\n   • No Fatigue — отключение усталости\n   • Fast Grind — ускоренная тренировка\n\n⚠️ DUPLICATE PETS — оставлен с предупреждением\n\n💡 ВСЕ ФУНКЦИИ РАБОТАЮТ БЕЗ ПРОВЕРОК ИГРЫ\n\n🔧 Версия: V20.1\n📅 Дата: 17.07.2026\n👤 Credits: Apex + SWILL"
+updateText.TextColor3 = Color3.fromRGB(200, 220, 255)
+updateText.TextScaled = false
+updateText.Font = Enum.Font.Gotham
+updateText.TextWrapped = true
+updateText.TextXAlignment = Enum.TextXAlignment.Left
+updateText.Parent = uContainer
+
+-- ===== BINDS TAB =====
+local bContainer = tabContainers[8]
 createBindCard(bContainer, "fly", "Fly")
 createBindCard(bContainer, "noclip", "Noclip")
 createBindCard(bContainer, "jump", "Infinite Jump")
@@ -1598,4 +1624,4 @@ Player.CharacterAdded:Connect(function(newChar)
     if invisibleEnabled then toggleInvisible(true) end
 end)
 
-print("APEX CHEAT V20.0 LOADED | ALL GAMES MODULES | CREDITS: Apex + SWILL")
+print("APEX CHEAT V20.1 LOADED | +UPDATE TAB | ALL GAMES MODULES | CREDITS: Apex + SWILL")
