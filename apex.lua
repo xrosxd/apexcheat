@@ -1,4 +1,4 @@
--- APEX CHEAT V19.4 | NO BACKGROUND BLEED | CREDITS ADDED | +FREEZE +FUNNY +GAMES
+-- APEX CHEAT V19.4 | FIXED TELEPORT LOBBY + AUTO FARM STRENGTH
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
@@ -6,12 +6,10 @@ local VirtualInput = game:GetService("VirtualInput")
 local Camera = workspace.CurrentCamera
 local Player = Players.LocalPlayer
 
--- ===== ПЕРСОНАЖ =====
 local Char = Player.Character or Player.CharacterAdded:Wait()
 local Humanoid = Char:WaitForChild("Humanoid")
 local RootPart = Char:WaitForChild("HumanoidRootPart")
 
--- ===== СОСТОЯНИЯ =====
 local flyEnabled = false
 local noclipEnabled = false
 local infiniteJump = false
@@ -29,17 +27,14 @@ local currentTabIndex = 1
 local blueHue = 0
 local waitingForKey = nil
 
--- COMBAT
 local aimbotEnabled = false
 local triggerbotEnabled = false
 
--- VISUALS
 local espEnabled = false
 local fullbrightEnabled = false
 local chamsEnabled = false
 local tracersEnabled = false
 
--- FUNNY FUNCTIONS
 local spinEnabled = false
 local spinSpeed = 1
 local bobbingEnabled = false
@@ -50,7 +45,15 @@ local flingEnabled = false
 local flingPower = 50
 local invisibleEnabled = false
 
--- ===== БИНДЫ =====
+-- GAMES
+local ninjaDuping = false
+local ninjaDupingConn = nil
+local ninjaDupedCount = 0
+
+local muscleAutoFarm = false
+local muscleFarmConn = nil
+
+-- БИНДЫ
 local binds = {
     fly = {key = Enum.KeyCode.F, label = "Fly"},
     noclip = {key = Enum.KeyCode.N, label = "Noclip"},
@@ -80,7 +83,7 @@ local function updateBindButton(funcName)
     end
 end
 
--- ===== НОКЛИП =====
+-- НОКЛИП
 local noclipConn = nil
 local function applyNoclip()
     if not noclipEnabled or not Char then return end
@@ -113,7 +116,7 @@ local function toggleNoclip(state)
     applyNoclip()
 end
 
--- ===== ФУНКЦИИ =====
+-- ОСНОВНЫЕ ФУНКЦИИ
 local flyConn = nil
 local flyBodyVel = nil
 local flyBodyGyro = nil
@@ -194,7 +197,6 @@ local function toggleAutoClicker(state)
     end)
 end
 
--- ===== FREEZE =====
 local freezeConn = nil
 local freezeBodyPos = nil
 local function toggleFreeze(state)
@@ -219,7 +221,7 @@ local function toggleFreeze(state)
     end)
 end
 
--- ===== COMBAT =====
+-- COMBAT
 local aimbotConn = nil
 local function toggleAimbot(state)
     aimbotEnabled = state
@@ -284,7 +286,7 @@ local function toggleTriggerbot(state)
     end)
 end
 
--- ===== VISUALS =====
+-- VISUALS
 local espConn = nil
 local espHighlights = {}
 local function toggleEsp(state)
@@ -409,7 +411,7 @@ local function toggleTracers(state)
     end)
 end
 
--- ===== FUNNY FUNCTIONS =====
+-- FUNNY
 local spinConn = nil
 local function toggleSpin(state)
     spinEnabled = state
@@ -481,11 +483,9 @@ local function toggleInvisible(state)
     end
 end
 
--- ===== GAMES (NINJA LEGENDS) =====
-local ninjaDuping = false
-local ninjaDupingConn = nil
-local ninjaDupedCount = 0
+-- ===== GAMES FUNCTIONS =====
 
+-- NINJA LEGENDS (DUPLICATE)
 local function getNinjaPets()
     local pets = {}
     local backpack = Player:FindFirstChild("Backpack")
@@ -536,6 +536,59 @@ local function toggleNinjaDup(state)
     end)
 end
 
+-- MM2 (FIXED TELEPORT TO LOBBY)
+local function teleportToLobby()
+    local targetPlayer = nil
+    for _, v in pairs(Players:GetPlayers()) do
+        if v ~= Player and v.Character and v.Character:FindFirstChild("HumanoidRootPart") then
+            targetPlayer = v
+            break
+        end
+    end
+    if targetPlayer then
+        local targetRoot = targetPlayer.Character.HumanoidRootPart
+        if targetRoot then
+            RootPart.CFrame = targetRoot.CFrame + Vector3.new(0, 2, 0)
+            print("Teleported to lobby (near " .. targetPlayer.Name .. ")")
+        end
+    else
+        RootPart.CFrame = CFrame.new(0, 50, 0)
+        print("No players found, teleported to center")
+    end
+end
+
+-- MUSCLE LEGENDS (FIXED AUTO FARM)
+local function toggleMuscleAutoFarm(state)
+    muscleAutoFarm = state
+    if muscleFarmConn then muscleFarmConn:Disconnect() muscleFarmConn = nil end
+    if not muscleAutoFarm then return end
+    muscleFarmConn = RunService.Heartbeat:Connect(function()
+        if not muscleAutoFarm then return end
+        pcall(function()
+            local remote = game:GetService("ReplicatedStorage"):FindFirstChild("Train") 
+            if not remote then
+                remote = game:GetService("ReplicatedStorage"):FindFirstChild("Workout")
+            end
+            if not remote then
+                remote = game:GetService("ReplicatedStorage"):FindFirstChild("Exercise")
+            end
+            if remote then
+                remote:FireServer()
+            else
+                local playerGui = Player.PlayerGui
+                if playerGui then
+                    for _, child in pairs(playerGui:GetDescendants()) do
+                        if child:IsA("TextButton") and (child.Name:find("Train") or child.Name:find("Workout") or child.Name:find("Exercise")) then
+                            child:Fire()
+                            break
+                        end
+                    end
+                end
+            end
+        end)
+    end)
+end
+
 -- ===== UI =====
 local screenGui = Instance.new("ScreenGui")
 screenGui.Name = "ApexCheat"
@@ -567,7 +620,6 @@ bgLayer.BackgroundColor3 = Color3.fromRGB(6, 8, 18)
 bgLayer.BackgroundTransparency = 0.95
 bgLayer.BorderSizePixel = 0
 bgLayer.Parent = mainFrame
-
 local bgCorner = Instance.new("UICorner")
 bgCorner.CornerRadius = UDim.new(0, 16)
 bgCorner.Parent = bgLayer
@@ -578,7 +630,6 @@ local function pulseAnimation()
     mainStroke.Color = Color3.fromRGB(r*255, g*255, b*255)
 end
 
--- ===== ВЕРХНЯЯ ПАНЕЛЬ =====
 local topBar = Instance.new("Frame")
 topBar.Size = UDim2.new(1, 0, 0, 50)
 topBar.BackgroundColor3 = Color3.fromRGB(8, 10, 24)
@@ -627,14 +678,12 @@ closeBtn.MouseButton1Click:Connect(function()
     mainFrame.Visible = false
 end)
 
--- ===== ОСНОВНАЯ ОБЛАСТЬ =====
 local mainBody = Instance.new("Frame")
 mainBody.Size = UDim2.new(1, 0, 1, -50)
 mainBody.Position = UDim2.new(0, 0, 0, 50)
 mainBody.BackgroundTransparency = 1
 mainBody.Parent = mainFrame
 
--- === ВКЛАДКИ (СЛЕВА) ===
 local tabSidebar = Instance.new("Frame")
 tabSidebar.Size = UDim2.new(0, 155, 1, 0)
 tabSidebar.BackgroundTransparency = 1
@@ -645,14 +694,13 @@ tabList.Padding = UDim.new(0, 8)
 tabList.SortOrder = Enum.SortOrder.LayoutOrder
 tabList.Parent = tabSidebar
 
--- ===== ВАЖНО: ВСЕ ВКЛАДКИ ОПРЕДЕЛЕНЫ ЗДЕСЬ (включая Games) =====
 local tabData = {
     {name = "Visuals"},
     {name = "Movement"},
     {name = "Combat"},
     {name = "Other"},
     {name = "Funny"},
-    {name = "Games"},      -- <-- Вкладка Games добавлена в общий список
+    {name = "Games"},
     {name = "Binds"}
 }
 
@@ -691,14 +739,12 @@ for i, data in ipairs(tabData) do
     table.insert(tabButtons, btn)
 end
 
--- === КОНТЕНТ (СПРАВА) ===
 local contentArea = Instance.new("Frame")
 contentArea.Size = UDim2.new(1, -175, 1, -15)
 contentArea.Position = UDim2.new(0, 165, 0, 10)
 contentArea.BackgroundTransparency = 1
 contentArea.Parent = mainBody
 
--- Создаём контейнеры для ВСЕХ вкладок (включая Games)
 for i = 1, #tabData do
     local container = Instance.new("ScrollingFrame")
     container.Size = UDim2.new(1, 0, 1, 0)
@@ -723,7 +769,6 @@ for i = 1, #tabData do
     tabContainers[i] = container
 end
 
--- ===== UI ЭЛЕМЕНТЫ =====
 local function createToggleCard(parent, labelText, default, onChange)
     local card = Instance.new("Frame")
     card.Size = UDim2.new(1, 0, 0, 42)
@@ -895,7 +940,7 @@ local function createBindCard(parent, funcName, labelText)
     return bindBtn
 end
 
--- ===== ЗАПОЛНЕНИЕ ВКЛАДОК =====
+-- ЗАПОЛНЕНИЕ ВКЛАДОК
 local vContainer = tabContainers[1]
 local espBtn, espGet = createToggleCard(vContainer, "ESP", false, toggleEsp)
 local fbBtn, fbGet = createToggleCard(vContainer, "FullBright", false, toggleFullbright)
@@ -936,10 +981,9 @@ local flingBtn, flingGet = createToggleCard(fContainer, "Fling", false, toggleFl
 createSliderCard(fContainer, "Fling Power", 10, 150, 50, function(v) flingPower = v end)
 local invisibleBtn, invisibleGet = createToggleCard(fContainer, "Invisible", false, toggleInvisible)
 
--- ===== GAMES TAB (индекс 6) =====
+-- ===== GAMES TAB =====
 local gContainer = tabContainers[6]
 
--- Заголовок
 local gamesTitle = Instance.new("TextLabel")
 gamesTitle.Size = UDim2.new(1, 0, 0, 30)
 gamesTitle.BackgroundTransparency = 1
@@ -949,7 +993,6 @@ gamesTitle.TextScaled = true
 gamesTitle.Font = Enum.Font.GothamBold
 gamesTitle.Parent = gContainer
 
--- Под-вкладки (горизонтальные)
 local subTabPanel = Instance.new("Frame")
 subTabPanel.Size = UDim2.new(1, 0, 0, 40)
 subTabPanel.BackgroundTransparency = 1
@@ -970,7 +1013,6 @@ local subTabData = {
 local subTabButtons = {}
 local subTabContainers = {}
 
--- Контейнер для контента под-табов
 local subContentArea = Instance.new("Frame")
 subContentArea.Size = UDim2.new(1, 0, 1, -50)
 subContentArea.Position = UDim2.new(0, 0, 0, 45)
@@ -1030,7 +1072,7 @@ for i, data in ipairs(subTabData) do
     end)
 end
 
--- ===== NINJA LEGENDS (под-таб 1) =====
+-- ===== NINJA LEGENDS =====
 local ninjaContainer = subTabContainers[1]
 
 local dupCard = Instance.new("Frame")
@@ -1111,28 +1153,33 @@ infoLabel.Font = Enum.Font.Gotham
 infoLabel.Parent = ninjaContainer
 infoLabel.TextWrapped = true
 
--- Заглушки для MM2 и Muscle Legends
+-- ===== MM2 =====
 local mm2Container = subTabContainers[2]
-local mm2Placeholder = Instance.new("TextLabel")
-mm2Placeholder.Size = UDim2.new(1, 0, 1, 0)
-mm2Placeholder.BackgroundTransparency = 1
-mm2Placeholder.Text = "MM2 functions coming soon..."
-mm2Placeholder.TextColor3 = Color3.fromRGB(150, 150, 200)
-mm2Placeholder.TextScaled = true
-mm2Placeholder.Font = Enum.Font.Gotham
-mm2Placeholder.Parent = mm2Container
 
+local lobbyBtn = Instance.new("TextButton")
+lobbyBtn.Size = UDim2.new(1, 0, 0, 40)
+lobbyBtn.Position = UDim2.new(0, 0, 0, 10)
+lobbyBtn.BackgroundColor3 = Color3.fromRGB(0, 100, 200)
+lobbyBtn.Text = "Teleport to Lobby"
+lobbyBtn.TextColor3 = Color3.new(1,1,1)
+lobbyBtn.TextScaled = true
+lobbyBtn.Font = Enum.Font.GothamBold
+lobbyBtn.BorderSizePixel = 0
+lobbyBtn.Parent = mm2Container
+
+local lobbyBtnCorner = Instance.new("UICorner")
+lobbyBtnCorner.CornerRadius = UDim.new(0, 8)
+lobbyBtnCorner.Parent = lobbyBtn
+
+lobbyBtn.MouseButton1Click:Connect(function()
+    teleportToLobby()
+end)
+
+-- ===== MUSCLE LEGENDS =====
 local muscleContainer = subTabContainers[3]
-local musclePlaceholder = Instance.new("TextLabel")
-musclePlaceholder.Size = UDim2.new(1, 0, 1, 0)
-musclePlaceholder.BackgroundTransparency = 1
-musclePlaceholder.Text = "Muscle Legends functions coming soon..."
-musclePlaceholder.TextColor3 = Color3.fromRGB(150, 150, 200)
-musclePlaceholder.TextScaled = true
-musclePlaceholder.Font = Enum.Font.Gotham
-musclePlaceholder.Parent = muscleContainer
+local farmBtn, farmGet = createToggleCard(muscleContainer, "Auto Farm Strength", false, toggleMuscleAutoFarm)
 
--- ===== BINDS TAB (индекс 7) =====
+-- ===== BINDS =====
 local bContainer = tabContainers[7]
 createBindCard(bContainer, "fly", "Fly")
 createBindCard(bContainer, "noclip", "Noclip")
@@ -1152,10 +1199,8 @@ createBindCard(bContainer, "jitter", "Jitter")
 createBindCard(bContainer, "fling", "Fling")
 createBindCard(bContainer, "invisible", "Invisible")
 
--- ===== ОБРАБОТЧИК БИНДОВ =====
 UserInputService.InputBegan:Connect(function(input, gp)
     if gp then return end
-    
     if waitingForKey then
         if input.KeyCode == Enum.KeyCode.Backspace then
             binds[waitingForKey].key = nil
@@ -1177,13 +1222,11 @@ UserInputService.InputBegan:Connect(function(input, gp)
         end
         return
     end
-    
     if input.KeyCode == Enum.KeyCode.Backspace then
         menuOpen = not menuOpen
         mainFrame.Visible = menuOpen
         return
     end
-    
     for funcName, bind in pairs(binds) do
         if bind.key and input.KeyCode == bind.key then
             if funcName == "fly" then
@@ -1276,7 +1319,6 @@ UserInputService.InputBegan:Connect(function(input, gp)
     end
 end)
 
--- ===== КОЛЕСО МЫШИ =====
 UserInputService.InputChanged:Connect(function(input, gp)
     if gp or not flyEnabled then return end
     if input.UserInputType == Enum.UserInputType.MouseWheel then
@@ -1284,12 +1326,10 @@ UserInputService.InputChanged:Connect(function(input, gp)
     end
 end)
 
--- ===== АНИМАЦИЯ =====
 RunService.Heartbeat:Connect(function()
     pulseAnimation()
 end)
 
--- ===== ПЕРЕРОЖДЕНИЕ =====
 Player.CharacterAdded:Connect(function(newChar)
     Char = newChar
     Humanoid = Char:WaitForChild("Humanoid")
@@ -1312,4 +1352,4 @@ Player.CharacterAdded:Connect(function(newChar)
     if invisibleEnabled then toggleInvisible(true) end
 end)
 
-print("APEX CHEAT V19.4 LOADED | +GAMES TAB +NINJA DUP | CREDITS: Apex + SWILL")
+print("APEX CHEAT V19.4 LOADED | FIXED TELEPORT LOBBY + AUTO FARM STRENGTH | CREDITS: Apex + SWILL")
