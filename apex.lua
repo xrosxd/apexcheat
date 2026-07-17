@@ -1,15 +1,13 @@
--- APEX CHEAT V19.4 | FIXED TELEPORT LOBBY + AUTO FARM STRENGTH
+-- APEX CHEAT V20.0 | FULL GAMES MODULES
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
 local VirtualInput = game:GetService("VirtualInput")
 local Camera = workspace.CurrentCamera
 local Player = Players.LocalPlayer
-
 local Char = Player.Character or Player.CharacterAdded:Wait()
 local Humanoid = Char:WaitForChild("Humanoid")
 local RootPart = Char:WaitForChild("HumanoidRootPart")
-
 local flyEnabled = false
 local noclipEnabled = false
 local infiniteJump = false
@@ -26,15 +24,12 @@ local menuOpen = true
 local currentTabIndex = 1
 local blueHue = 0
 local waitingForKey = nil
-
 local aimbotEnabled = false
 local triggerbotEnabled = false
-
 local espEnabled = false
 local fullbrightEnabled = false
 local chamsEnabled = false
 local tracersEnabled = false
-
 local spinEnabled = false
 local spinSpeed = 1
 local bobbingEnabled = false
@@ -45,15 +40,42 @@ local flingEnabled = false
 local flingPower = 50
 local invisibleEnabled = false
 
--- GAMES
+-- ===== GAMES FUNCTIONS =====
+-- NINJA LEGENDS
+local ninjaAutoFarm = false
+local ninjaFarmConn = nil
+local ninjaAutoUpgrade = false
+local ninjaUpgradeConn = nil
+local ninjaAutoCollect = false
+local ninjaCollectConn = nil
+local ninjaAutoRebirth = false
+local ninjaRebirthConn = nil
 local ninjaDuping = false
 local ninjaDupingConn = nil
 local ninjaDupedCount = 0
 
+-- MM2
+local mm2AutoShoot = false
+local mm2ShootConn = nil
+local mm2CoinFarm = false
+local mm2CoinConn = nil
+local mm2ESP = false
+local mm2ESPConn = nil
+local mm2AlwaysWin = false
+local mm2WinConn = nil
+
+-- MUSCLE LEGENDS
 local muscleAutoFarm = false
 local muscleFarmConn = nil
+local muscleAutoRebirth = false
+local muscleRebirthConn = nil
+local muscleAutoCollect = false
+local muscleCollectConn = nil
+local muscleNoFatigue = false
+local muscleFatigueConn = nil
+local muscleFastGrind = false
+local muscleGrindConn = nil
 
--- БИНДЫ
 local binds = {
     fly = {key = Enum.KeyCode.F, label = "Fly"},
     noclip = {key = Enum.KeyCode.N, label = "Noclip"},
@@ -83,7 +105,6 @@ local function updateBindButton(funcName)
     end
 end
 
--- НОКЛИП
 local noclipConn = nil
 local function applyNoclip()
     if not noclipEnabled or not Char then return end
@@ -116,7 +137,6 @@ local function toggleNoclip(state)
     applyNoclip()
 end
 
--- ОСНОВНЫЕ ФУНКЦИИ
 local flyConn = nil
 local flyBodyVel = nil
 local flyBodyGyro = nil
@@ -221,7 +241,6 @@ local function toggleFreeze(state)
     end)
 end
 
--- COMBAT
 local aimbotConn = nil
 local function toggleAimbot(state)
     aimbotEnabled = state
@@ -286,7 +305,6 @@ local function toggleTriggerbot(state)
     end)
 end
 
--- VISUALS
 local espConn = nil
 local espHighlights = {}
 local function toggleEsp(state)
@@ -411,7 +429,6 @@ local function toggleTracers(state)
     end)
 end
 
--- FUNNY
 local spinConn = nil
 local function toggleSpin(state)
     spinEnabled = state
@@ -483,9 +500,67 @@ local function toggleInvisible(state)
     end
 end
 
--- ===== GAMES FUNCTIONS =====
+-- ===== NINJA LEGENDS FUNCTIONS =====
+local function toggleNinjaAutoFarm(state)
+    ninjaAutoFarm = state
+    if ninjaFarmConn then ninjaFarmConn:Disconnect() ninjaFarmConn = nil end
+    if not ninjaAutoFarm then return end
+    ninjaFarmConn = RunService.Heartbeat:Connect(function()
+        if not ninjaAutoFarm then return end
+        pcall(function()
+            local attackRemote = game:GetService("ReplicatedStorage"):FindFirstChild("Attack")
+            if attackRemote then attackRemote:FireServer() end
+            local m1 = game:GetService("UserInputService"):IsMouseButtonPressed(Enum.UserInputType.MouseButton1)
+            if not m1 then VirtualInput:SendMouseButtonEvent(0,0,0,true,Enum.UserInputType.MouseButton1,true) end
+            task.wait(0.1)
+        end)
+    end)
+end
 
--- NINJA LEGENDS (DUPLICATE)
+local function toggleNinjaAutoUpgrade(state)
+    ninjaAutoUpgrade = state
+    if ninjaUpgradeConn then ninjaUpgradeConn:Disconnect() ninjaUpgradeConn = nil end
+    if not ninjaAutoUpgrade then return end
+    ninjaUpgradeConn = RunService.Heartbeat:Connect(function()
+        if not ninjaAutoUpgrade then return end
+        pcall(function()
+            local upgradeRemote = game:GetService("ReplicatedStorage"):FindFirstChild("Upgrade")
+            if upgradeRemote then upgradeRemote:FireServer() end
+        end)
+    end)
+end
+
+local function toggleNinjaAutoCollect(state)
+    ninjaAutoCollect = state
+    if ninjaCollectConn then ninjaCollectConn:Disconnect() ninjaCollectConn = nil end
+    if not ninjaAutoCollect then return end
+    ninjaCollectConn = RunService.Heartbeat:Connect(function()
+        if not ninjaAutoCollect then return end
+        for _, v in pairs(workspace:GetChildren()) do
+            if v:IsA("Part") and (v.Name:find("Coin") or v.Name:find("Soul") or v.Name:find("Chest")) then
+                local distance = (RootPart.Position - v.Position).Magnitude
+                if distance < 30 then
+                    RootPart.CFrame = v.CFrame + Vector3.new(0,2,0)
+                end
+            end
+        end
+    end)
+end
+
+local function toggleNinjaAutoRebirth(state)
+    ninjaAutoRebirth = state
+    if ninjaRebirthConn then ninjaRebirthConn:Disconnect() ninjaRebirthConn = nil end
+    if not ninjaAutoRebirth then return end
+    ninjaRebirthConn = RunService.Heartbeat:Connect(function()
+        if not ninjaAutoRebirth then return end
+        pcall(function()
+            local rebirthRemote = game:GetService("ReplicatedStorage"):FindFirstChild("Rebirth")
+            if rebirthRemote then rebirthRemote:FireServer() end
+        end)
+    end)
+end
+
+-- NINJA DUP
 local function getNinjaPets()
     local pets = {}
     local backpack = Player:FindFirstChild("Backpack")
@@ -536,28 +611,87 @@ local function toggleNinjaDup(state)
     end)
 end
 
--- MM2 (FIXED TELEPORT TO LOBBY)
-local function teleportToLobby()
-    local targetPlayer = nil
-    for _, v in pairs(Players:GetPlayers()) do
-        if v ~= Player and v.Character and v.Character:FindFirstChild("HumanoidRootPart") then
-            targetPlayer = v
-            break
-        end
-    end
-    if targetPlayer then
-        local targetRoot = targetPlayer.Character.HumanoidRootPart
-        if targetRoot then
-            RootPart.CFrame = targetRoot.CFrame + Vector3.new(0, 2, 0)
-            print("Teleported to lobby (near " .. targetPlayer.Name .. ")")
-        end
-    else
-        RootPart.CFrame = CFrame.new(0, 50, 0)
-        print("No players found, teleported to center")
-    end
+-- ===== MM2 FUNCTIONS =====
+local function toggleMM2AutoShoot(state)
+    mm2AutoShoot = state
+    if mm2ShootConn then mm2ShootConn:Disconnect() mm2ShootConn = nil end
+    if not mm2AutoShoot then return end
+    mm2ShootConn = RunService.Heartbeat:Connect(function()
+        if not mm2AutoShoot then return end
+        pcall(function()
+            local mouse = Player:GetMouse()
+            local target = mouse.Target
+            if target and target.Parent then
+                local humanoid = target.Parent:FindFirstChild("Humanoid")
+                if humanoid then
+                    local targetPlayer = Players:GetPlayerFromCharacter(target.Parent)
+                    if targetPlayer and targetPlayer ~= Player then
+                        VirtualInput:SendMouseButtonEvent(0,0,0,true,Enum.UserInputType.MouseButton1,true)
+                        task.wait(0.05)
+                        VirtualInput:SendMouseButtonEvent(0,0,0,false,Enum.UserInputType.MouseButton1,true)
+                    end
+                end
+            end
+        end)
+    end)
 end
 
--- MUSCLE LEGENDS (FIXED AUTO FARM)
+local function toggleMM2CoinFarm(state)
+    mm2CoinFarm = state
+    if mm2CoinConn then mm2CoinConn:Disconnect() mm2CoinConn = nil end
+    if not mm2CoinFarm then return end
+    mm2CoinConn = RunService.Heartbeat:Connect(function()
+        if not mm2CoinFarm then return end
+        for _, v in pairs(workspace:GetChildren()) do
+            if v:IsA("Part") and v.Name:find("Coin") then
+                local distance = (RootPart.Position - v.Position).Magnitude
+                if distance < 20 then
+                    RootPart.CFrame = v.CFrame + Vector3.new(0,2,0)
+                end
+            end
+        end
+    end)
+end
+
+local function toggleMM2ESP(state)
+    mm2ESP = state
+    if mm2ESPConn then mm2ESPConn:Disconnect() mm2ESPConn = nil end
+    if not mm2ESP then return end
+    mm2ESPConn = RunService.Heartbeat:Connect(function()
+        if not mm2ESP then return end
+        for _, v in pairs(Players:GetPlayers()) do
+            if v ~= Player and v.Character then
+                for _, part in pairs(v.Character:GetDescendants()) do
+                    if part:IsA("BasePart") then
+                        local esp = part:FindFirstChild("MM2_ESP")
+                        if not esp then
+                            esp = Instance.new("Highlight")
+                            esp.Name = "MM2_ESP"
+                            esp.FillColor = Color3.fromRGB(255,0,0)
+                            esp.OutlineColor = Color3.fromRGB(255,255,0)
+                            esp.Parent = part
+                        end
+                    end
+                end
+            end
+        end
+    end)
+end
+
+local function toggleMM2AlwaysWin(state)
+    mm2AlwaysWin = state
+    if mm2WinConn then mm2WinConn:Disconnect() mm2WinConn = nil end
+    if not mm2AlwaysWin then return end
+    mm2WinConn = RunService.Heartbeat:Connect(function()
+        if not mm2AlwaysWin then return end
+        pcall(function()
+            local winRemote = game:GetService("ReplicatedStorage"):FindFirstChild("WinRound")
+            if winRemote then winRemote:FireServer() end
+        end)
+    end)
+end
+
+-- ===== MUSCLE LEGENDS FUNCTIONS =====
 local function toggleMuscleAutoFarm(state)
     muscleAutoFarm = state
     if muscleFarmConn then muscleFarmConn:Disconnect() muscleFarmConn = nil end
@@ -565,26 +699,60 @@ local function toggleMuscleAutoFarm(state)
     muscleFarmConn = RunService.Heartbeat:Connect(function()
         if not muscleAutoFarm then return end
         pcall(function()
-            local remote = game:GetService("ReplicatedStorage"):FindFirstChild("Train") 
-            if not remote then
-                remote = game:GetService("ReplicatedStorage"):FindFirstChild("Workout")
-            end
-            if not remote then
-                remote = game:GetService("ReplicatedStorage"):FindFirstChild("Exercise")
-            end
-            if remote then
-                remote:FireServer()
-            else
-                local playerGui = Player.PlayerGui
-                if playerGui then
-                    for _, child in pairs(playerGui:GetDescendants()) do
-                        if child:IsA("TextButton") and (child.Name:find("Train") or child.Name:find("Workout") or child.Name:find("Exercise")) then
-                            child:Fire()
-                            break
-                        end
-                    end
-                end
-            end
+            local trainRemote = game:GetService("ReplicatedStorage"):FindFirstChild("Train")
+            if trainRemote then trainRemote:FireServer() end
+        end)
+    end)
+end
+
+local function toggleMuscleAutoRebirth(state)
+    muscleAutoRebirth = state
+    if muscleRebirthConn then muscleRebirthConn:Disconnect() muscleRebirthConn = nil end
+    if not muscleAutoRebirth then return end
+    muscleRebirthConn = RunService.Heartbeat:Connect(function()
+        if not muscleAutoRebirth then return end
+        pcall(function()
+            local rebirthRemote = game:GetService("ReplicatedStorage"):FindFirstChild("Rebirth")
+            if rebirthRemote then rebirthRemote:FireServer() end
+        end)
+    end)
+end
+
+local function toggleMuscleAutoCollect(state)
+    muscleAutoCollect = state
+    if muscleCollectConn then muscleCollectConn:Disconnect() muscleCollectConn = nil end
+    if not muscleAutoCollect then return end
+    muscleCollectConn = RunService.Heartbeat:Connect(function()
+        if not muscleAutoCollect then return end
+        pcall(function()
+            local collectRemote = game:GetService("ReplicatedStorage"):FindFirstChild("CollectReward")
+            if collectRemote then collectRemote:FireServer() end
+        end)
+    end)
+end
+
+local function toggleMuscleNoFatigue(state)
+    muscleNoFatigue = state
+    if muscleFatigueConn then muscleFatigueConn:Disconnect() muscleFatigueConn = nil end
+    if not muscleNoFatigue then return end
+    muscleFatigueConn = RunService.Heartbeat:Connect(function()
+        if not muscleNoFatigue then return end
+        pcall(function()
+            local fatigue = Player:FindFirstChild("Fatigue")
+            if fatigue then fatigue.Value = 0 end
+        end)
+    end)
+end
+
+local function toggleMuscleFastGrind(state)
+    muscleFastGrind = state
+    if muscleGrindConn then muscleGrindConn:Disconnect() muscleGrindConn = nil end
+    if not muscleFastGrind then return end
+    muscleGrindConn = RunService.Heartbeat:Connect(function()
+        if not muscleFastGrind then return end
+        pcall(function()
+            local grindRemote = game:GetService("ReplicatedStorage"):FindFirstChild("FastGrind")
+            if grindRemote then grindRemote:FireServer() end
         end)
     end)
 end
@@ -596,8 +764,8 @@ screenGui.Parent = Player:WaitForChild("PlayerGui")
 screenGui.ResetOnSpawn = false
 
 local mainFrame = Instance.new("Frame")
-mainFrame.Size = UDim2.new(0, 820, 0, 560)
-mainFrame.Position = UDim2.new(0.5, -410, 0.5, -280)
+mainFrame.Size = UDim2.new(0, 820, 0, 580)
+mainFrame.Position = UDim2.new(0.5, -410, 0.5, -290)
 mainFrame.BackgroundColor3 = Color3.fromRGB(6, 8, 18)
 mainFrame.BackgroundTransparency = 0.05
 mainFrame.BorderSizePixel = 0
@@ -645,7 +813,7 @@ local titleLabel = Instance.new("TextLabel")
 titleLabel.Size = UDim2.new(0.4, 0, 1, 0)
 titleLabel.Position = UDim2.new(0, 20, 0, 0)
 titleLabel.BackgroundTransparency = 1
-titleLabel.Text = "APEX CHEAT V19.4"
+titleLabel.Text = "APEX CHEAT V20.0"
 titleLabel.TextColor3 = Color3.fromRGB(0, 180, 255)
 titleLabel.TextScaled = true
 titleLabel.Font = Enum.Font.GothamBold
@@ -664,14 +832,19 @@ creditLabel.TextXAlignment = Enum.TextXAlignment.Left
 creditLabel.Parent = topBar
 
 local closeBtn = Instance.new("TextButton")
-closeBtn.Size = UDim2.new(0, 50, 1, 0)
-closeBtn.Position = UDim2.new(1, -55, 0, 0)
-closeBtn.BackgroundTransparency = 1
+closeBtn.Size = UDim2.new(0, 36, 0, 36)
+closeBtn.Position = UDim2.new(1, -46, 0, 7)
+closeBtn.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
 closeBtn.Text = "✕"
-closeBtn.TextColor3 = Color3.fromRGB(200, 50, 50)
+closeBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
 closeBtn.TextScaled = true
 closeBtn.Font = Enum.Font.GothamBold
+closeBtn.BorderSizePixel = 0
 closeBtn.Parent = topBar
+
+local closeCorner = Instance.new("UICorner")
+closeCorner.CornerRadius = UDim.new(1, 0)
+closeCorner.Parent = closeBtn
 
 closeBtn.MouseButton1Click:Connect(function()
     menuOpen = false
@@ -940,7 +1113,60 @@ local function createBindCard(parent, funcName, labelText)
     return bindBtn
 end
 
--- ЗАПОЛНЕНИЕ ВКЛАДОК
+local function createGameToggle(parent, labelText, onChange)
+    local card = Instance.new("Frame")
+    card.Size = UDim2.new(1, 0, 0, 42)
+    card.BackgroundColor3 = Color3.fromRGB(12, 12, 28)
+    card.BackgroundTransparency = 0.3
+    card.BorderSizePixel = 0
+    card.Parent = parent
+    
+    local cardCorner = Instance.new("UICorner")
+    cardCorner.CornerRadius = UDim.new(0, 8)
+    cardCorner.Parent = card
+    
+    local cardStroke = Instance.new("UIStroke")
+    cardStroke.Color = Color3.fromRGB(30, 40, 80)
+    cardStroke.Thickness = 1.5
+    cardStroke.Transparency = 0.5
+    cardStroke.Parent = card
+    
+    local lbl = Instance.new("TextLabel")
+    lbl.Size = UDim2.new(0.65, 0, 1, 0)
+    lbl.Position = UDim2.new(0, 16, 0, 0)
+    lbl.BackgroundTransparency = 1
+    lbl.Text = labelText
+    lbl.TextColor3 = Color3.fromRGB(210, 215, 240)
+    lbl.TextXAlignment = Enum.TextXAlignment.Left
+    lbl.TextScaled = true
+    lbl.Font = Enum.Font.Gotham
+    lbl.Parent = card
+    
+    local btn = Instance.new("TextButton")
+    btn.Size = UDim2.new(0, 70, 0, 30)
+    btn.Position = UDim2.new(0.78, 0, 0.14, 0)
+    btn.BackgroundColor3 = Color3.fromRGB(40, 40, 70)
+    btn.Text = "OFF"
+    btn.TextColor3 = Color3.new(1,1,1)
+    btn.TextScaled = true
+    btn.Font = Enum.Font.GothamBold
+    btn.BorderSizePixel = 0
+    btn.Parent = card
+    btn.AutoButtonColor = false
+    
+    local btnCorner = Instance.new("UICorner")
+    btnCorner.CornerRadius = UDim.new(0, 6)
+    btnCorner.Parent = btn
+    
+    local state = false
+    btn.MouseButton1Click:Connect(function()
+        state = not state
+        btn.BackgroundColor3 = state and Color3.fromRGB(0, 180, 255) or Color3.fromRGB(40, 40, 70)
+        btn.Text = state and "ON" or "OFF"
+        onChange(state)
+    end)
+end
+
 local vContainer = tabContainers[1]
 local espBtn, espGet = createToggleCard(vContainer, "ESP", false, toggleEsp)
 local fbBtn, fbGet = createToggleCard(vContainer, "FullBright", false, toggleFullbright)
@@ -1072,8 +1298,20 @@ for i, data in ipairs(subTabData) do
     end)
 end
 
--- ===== NINJA LEGENDS =====
 local ninjaContainer = subTabContainers[1]
+createGameToggle(ninjaContainer, "Auto Farm", toggleNinjaAutoFarm)
+createGameToggle(ninjaContainer, "Auto Upgrade", toggleNinjaAutoUpgrade)
+createGameToggle(ninjaContainer, "Auto Collect", toggleNinjaAutoCollect)
+createGameToggle(ninjaContainer, "Auto Rebirth", toggleNinjaAutoRebirth)
+
+local warnDup = Instance.new("TextLabel")
+warnDup.Size = UDim2.new(1, 0, 0, 20)
+warnDup.BackgroundTransparency = 1
+warnDup.Text = "⚠️ DUPLICATE PETS — КРИТИЧЕСКИЙ РИСК"
+warnDup.TextColor3 = Color3.fromRGB(255, 50, 50)
+warnDup.TextScaled = true
+warnDup.Font = Enum.Font.GothamBold
+warnDup.Parent = ninjaContainer
 
 local dupCard = Instance.new("Frame")
 dupCard.Size = UDim2.new(1, 0, 0, 60)
@@ -1097,7 +1335,7 @@ dupLabel.Size = UDim2.new(0.5, 0, 1, 0)
 dupLabel.Position = UDim2.new(0, 16, 0, 0)
 dupLabel.BackgroundTransparency = 1
 dupLabel.Text = "DUPLICATE PETS"
-dupLabel.TextColor3 = Color3.fromRGB(255, 200, 50)
+dupLabel.TextColor3 = Color3.fromRGB(255, 50, 50)
 dupLabel.TextXAlignment = Enum.TextXAlignment.Left
 dupLabel.TextScaled = true
 dupLabel.Font = Enum.Font.GothamBold
@@ -1142,23 +1380,15 @@ local counterUpdateConn = RunService.Heartbeat:Connect(function()
     end
 end)
 
-local infoLabel = Instance.new("TextLabel")
-infoLabel.Size = UDim2.new(1, 0, 0, 30)
-infoLabel.Position = UDim2.new(0, 0, 0, 65)
-infoLabel.BackgroundTransparency = 1
-infoLabel.Text = "⚠️ Используй в одиночной игре. Не дупай слишком много."
-infoLabel.TextColor3 = Color3.fromRGB(255, 100, 100)
-infoLabel.TextScaled = true
-infoLabel.Font = Enum.Font.Gotham
-infoLabel.Parent = ninjaContainer
-infoLabel.TextWrapped = true
-
--- ===== MM2 =====
 local mm2Container = subTabContainers[2]
+createGameToggle(mm2Container, "Auto Shoot", toggleMM2AutoShoot)
+createGameToggle(mm2Container, "Coin Farm", toggleMM2CoinFarm)
+createGameToggle(mm2Container, "ESP Roles", toggleMM2ESP)
+createGameToggle(mm2Container, "Always Win", toggleMM2AlwaysWin)
 
+-- Teleport to Lobby (встроенная кнопка)
 local lobbyBtn = Instance.new("TextButton")
 lobbyBtn.Size = UDim2.new(1, 0, 0, 40)
-lobbyBtn.Position = UDim2.new(0, 0, 0, 10)
 lobbyBtn.BackgroundColor3 = Color3.fromRGB(0, 100, 200)
 lobbyBtn.Text = "Teleport to Lobby"
 lobbyBtn.TextColor3 = Color3.new(1,1,1)
@@ -1172,14 +1402,30 @@ lobbyBtnCorner.CornerRadius = UDim.new(0, 8)
 lobbyBtnCorner.Parent = lobbyBtn
 
 lobbyBtn.MouseButton1Click:Connect(function()
-    teleportToLobby()
+    local targetPlayer = nil
+    for _, v in pairs(Players:GetPlayers()) do
+        if v ~= Player and v.Character and v.Character:FindFirstChild("HumanoidRootPart") then
+            targetPlayer = v
+            break
+        end
+    end
+    if targetPlayer then
+        local targetRoot = targetPlayer.Character.HumanoidRootPart
+        if targetRoot then
+            RootPart.CFrame = targetRoot.CFrame + Vector3.new(0, 2, 0)
+        end
+    else
+        RootPart.CFrame = CFrame.new(0, 50, 0)
+    end
 end)
 
--- ===== MUSCLE LEGENDS =====
 local muscleContainer = subTabContainers[3]
-local farmBtn, farmGet = createToggleCard(muscleContainer, "Auto Farm Strength", false, toggleMuscleAutoFarm)
+createGameToggle(muscleContainer, "Auto Farm Strength", toggleMuscleAutoFarm)
+createGameToggle(muscleContainer, "Auto Rebirth", toggleMuscleAutoRebirth)
+createGameToggle(muscleContainer, "Auto Collect Rewards", toggleMuscleAutoCollect)
+createGameToggle(muscleContainer, "No Fatigue", toggleMuscleNoFatigue)
+createGameToggle(muscleContainer, "Fast Grind", toggleMuscleFastGrind)
 
--- ===== BINDS =====
 local bContainer = tabContainers[7]
 createBindCard(bContainer, "fly", "Fly")
 createBindCard(bContainer, "noclip", "Noclip")
@@ -1352,4 +1598,4 @@ Player.CharacterAdded:Connect(function(newChar)
     if invisibleEnabled then toggleInvisible(true) end
 end)
 
-print("APEX CHEAT V19.4 LOADED | FIXED TELEPORT LOBBY + AUTO FARM STRENGTH | CREDITS: Apex + SWILL")
+print("APEX CHEAT V20.0 LOADED | ALL GAMES MODULES | CREDITS: Apex + SWILL")
