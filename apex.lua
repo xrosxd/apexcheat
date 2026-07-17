@@ -1352,4 +1352,4 @@ Player.CharacterAdded:Connect(function(newChar)
     if invisibleEnabled then toggleInvisible(true) end
 end)
 
-print("APEX CHEAT V19.4 LOADED | FIXED TELEPORT LOBBY + AUTO FARM STRENGTH | CREDITS: Apex + SWILL")
+print("APEX CHEAT V19.4 LOADED | FIXED TELEPORT LOBBY + AUTO FARM STRENGTH | CREDITS: Apex + SWILLr")
